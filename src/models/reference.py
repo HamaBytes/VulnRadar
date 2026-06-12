@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from src.models.db_base import Base
 
 
-class CveReference(Base):
+class   CveReference(Base):
     __tablename__ = "cve_references"
 
     id = Column(BigInteger, primary_key=True)

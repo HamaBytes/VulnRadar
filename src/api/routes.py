@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from aiohttp import web
 
-from src.services.config import Config
-from src.services.database import init_db
+from src.config.config import Config
+from src.config.database import init_db
 
 
 def health_check() -> dict[str, object]:

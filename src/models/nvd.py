@@ -14,6 +14,10 @@ class CveDescription:
         return cls(lang=data.get("lang", ""), value=data.get("value", ""))
 
 
+# ---------------------------------------------------------------------------
+# CVSS v2
+# ---------------------------------------------------------------------------
+
 @dataclass(slots=True)
 class CvssDataV2:
     version: str | None = None
@@ -71,6 +75,124 @@ class CvssMetricV2:
             user_interaction_required=data.get("userInteractionRequired"),
         )
 
+
+# ---------------------------------------------------------------------------
+# CVSS v3.1
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class CvssDataV31:
+    version: str | None = None
+    vector_string: str | None = None
+    base_score: float | None = None
+    base_severity: str | None = None
+    attack_vector: str | None = None
+    attack_complexity: str | None = None
+    privileges_required: str | None = None
+    user_interaction: str | None = None
+    scope: str | None = None
+    confidentiality_impact: str | None = None
+    integrity_impact: str | None = None
+    availability_impact: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CvssDataV31":
+        return cls(
+            version=data.get("version"),
+            vector_string=data.get("vectorString"),
+            base_score=data.get("baseScore"),
+            base_severity=data.get("baseSeverity"),
+            attack_vector=data.get("attackVector"),
+            attack_complexity=data.get("attackComplexity"),
+            privileges_required=data.get("privilegesRequired"),
+            user_interaction=data.get("userInteraction"),
+            scope=data.get("scope"),
+            confidentiality_impact=data.get("confidentialityImpact"),
+            integrity_impact=data.get("integrityImpact"),
+            availability_impact=data.get("availabilityImpact"),
+        )
+
+
+@dataclass(slots=True)
+class CvssMetricV31:
+    source: str | None = None
+    metric_type: str | None = None
+    cvss_data: CvssDataV31 | None = None
+    exploitability_score: float | None = None
+    impact_score: float | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CvssMetricV31":
+        return cls(
+            source=data.get("source"),
+            metric_type=data.get("type"),
+            cvss_data=CvssDataV31.from_dict(data.get("cvssData", {})) if data.get("cvssData") else None,
+            exploitability_score=data.get("exploitabilityScore"),
+            impact_score=data.get("impactScore"),
+        )
+
+
+# ---------------------------------------------------------------------------
+# CVSS v4.0
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class CvssDataV40:
+    version: str | None = None
+    vector_string: str | None = None
+    base_score: float | None = None
+    base_severity: str | None = None
+    attack_vector: str | None = None
+    attack_complexity: str | None = None
+    attack_requirements: str | None = None
+    privileges_required: str | None = None
+    user_interaction: str | None = None
+    vuln_confidentiality_impact: str | None = None
+    vuln_integrity_impact: str | None = None
+    vuln_availability_impact: str | None = None
+    sub_confidentiality_impact: str | None = None
+    sub_integrity_impact: str | None = None
+    sub_availability_impact: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CvssDataV40":
+        return cls(
+            version=data.get("version"),
+            vector_string=data.get("vectorString"),
+            base_score=data.get("baseScore"),
+            base_severity=data.get("baseSeverity"),
+            attack_vector=data.get("attackVector"),
+            attack_complexity=data.get("attackComplexity"),
+            attack_requirements=data.get("attackRequirements"),
+            privileges_required=data.get("privilegesRequired"),
+            user_interaction=data.get("userInteraction"),
+            vuln_confidentiality_impact=data.get("vulnConfidentialityImpact"),
+            vuln_integrity_impact=data.get("vulnIntegrityImpact"),
+            vuln_availability_impact=data.get("vulnAvailabilityImpact"),
+            sub_confidentiality_impact=data.get("subConfidentialityImpact"),
+            sub_integrity_impact=data.get("subIntegrityImpact"),
+            sub_availability_impact=data.get("subAvailabilityImpact"),
+        )
+
+
+@dataclass(slots=True)
+class CvssMetricV40:
+    source: str | None = None
+    metric_type: str | None = None
+    cvss_data: CvssDataV40 | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CvssMetricV40":
+        return cls(
+            source=data.get("source"),
+            metric_type=data.get("type"),
+            cvss_data=CvssDataV40.from_dict(data.get("cvssData", {})) if data.get("cvssData") else None,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Weaknesses, Configurations, References
+# ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
 class CveWeakness:
@@ -136,6 +258,10 @@ class CveReference:
         return cls(url=data.get("url"), source=data.get("source"))
 
 
+# ---------------------------------------------------------------------------
+# Top-level NVD CVE
+# ---------------------------------------------------------------------------
+
 @dataclass(slots=True)
 class NvdCve:
     cve_id: str
@@ -145,14 +271,43 @@ class NvdCve:
     vuln_status: str | None = None
     cve_tags: list[str] = field(default_factory=list)
     descriptions: list[CveDescription] = field(default_factory=list)
-    metrics: list[CvssMetricV2] = field(default_factory=list)
+    metrics_v2: list[CvssMetricV2] = field(default_factory=list)
+    metrics_v31: list[CvssMetricV31] = field(default_factory=list)
+    metrics_v40: list[CvssMetricV40] = field(default_factory=list)
     weaknesses: list[CveWeakness] = field(default_factory=list)
     configurations: list[NvdConfiguration] = field(default_factory=list)
     references: list[CveReference] = field(default_factory=list)
 
+    # Keep backward-compatible alias
+    @property
+    def metrics(self) -> list[CvssMetricV2]:
+        return self.metrics_v2
+
+    def best_score(self) -> tuple[float | None, str | None, str | None]:
+        """
+        Return the best available (base_score, base_severity, cvss_version)
+        by preferring v4.0 > v3.1 > v2.
+        """
+        # Try CVSS v4.0 first
+        for m in self.metrics_v40:
+            if m.cvss_data and m.cvss_data.base_score is not None:
+                return (m.cvss_data.base_score, m.cvss_data.base_severity, m.cvss_data.version)
+
+        # Then CVSS v3.1
+        for m in self.metrics_v31:
+            if m.cvss_data and m.cvss_data.base_score is not None:
+                return (m.cvss_data.base_score, m.cvss_data.base_severity, m.cvss_data.version)
+
+        # Fall back to CVSS v2
+        for m in self.metrics_v2:
+            if m.cvss_data and m.cvss_data.base_score is not None:
+                return (m.cvss_data.base_score, m.base_severity, m.cvss_data.version)
+
+        return (None, None, None)
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "NvdCve":
-        metrics_data = data.get("metrics", {}).get("cvssMetricV2", [])
+        metrics_raw = data.get("metrics", {})
         return cls(
             cve_id=data.get("id", ""),
             source_identifier=data.get("sourceIdentifier"),
@@ -161,7 +316,9 @@ class NvdCve:
             vuln_status=data.get("vulnStatus"),
             cve_tags=list(data.get("cveTags", [])),
             descriptions=[CveDescription.from_dict(item) for item in data.get("descriptions", [])],
-            metrics=[CvssMetricV2.from_dict(item) for item in metrics_data],
+            metrics_v2=[CvssMetricV2.from_dict(item) for item in metrics_raw.get("cvssMetricV2", [])],
+            metrics_v31=[CvssMetricV31.from_dict(item) for item in metrics_raw.get("cvssMetricV31", [])],
+            metrics_v40=[CvssMetricV40.from_dict(item) for item in metrics_raw.get("cvssMetricV40", [])],
             weaknesses=[CveWeakness.from_dict(item) for item in data.get("weaknesses", [])],
             configurations=[NvdConfiguration.from_dict(item) for item in data.get("configurations", [])],
             references=[CveReference.from_dict(item) for item in data.get("references", [])],

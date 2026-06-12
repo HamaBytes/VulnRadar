@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.services.config import Config
+from src.config.config import Config
 
 DATABASE_URL = None
 engine = None

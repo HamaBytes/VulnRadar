@@ -1,7 +1,11 @@
 from src.models.nvd import (
     CpeMatch,
     CvssDataV2,
+    CvssDataV31,
+    CvssDataV40,
     CvssMetricV2,
+    CvssMetricV31,
+    CvssMetricV40,
     CveDescription,
     CveReference,
     CveWeakness,
