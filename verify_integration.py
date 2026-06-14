@@ -3,7 +3,7 @@ import json
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-from src.services.sync import run_enrichment_pipeline
+from src.services.fetchers.sync import run_enrichment_pipeline
 async def main():
     print("=" * 70)
     print("Running enrichment pipeline (KEV + EPSS + NVD) for top 3 CVEs...")
@@ -13,6 +13,8 @@ async def main():
         include_epss=True,
         include_nvd=True,
     )
+    print(enriched_data)
+    print("=" * 70)
     for record in enriched_data:
         print("\n" + "-" * 60)
         print(f"  CVE ID:           {record.get('cveID')}")

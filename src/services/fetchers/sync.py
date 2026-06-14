@@ -5,7 +5,7 @@ from typing import Any
 
 import aiohttp
 
-from src.services.kev_fetcher_async import get_kev_cves
+from src.services.fetchers.kev_fetcher_async import get_kev_cves
 from src.services.enrichment import enrich_all_kevs
 
 logger = logging.getLogger(__name__)

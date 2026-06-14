@@ -9,8 +9,8 @@ from typing import Any
 
 import aiohttp
 
-from src.services.nvd_fetcher_async import fetch_page
-from src.services.epss_fetcher_async import download_epss_scores, enrich_records_with_epss
+from src.services.fetchers.nvd_fetcher_async import fetch_page
+from src.services.fetchers.epss_fetcher_async import download_epss_scores, enrich_records_with_epss
 
 logger = logging.getLogger(__name__)
 

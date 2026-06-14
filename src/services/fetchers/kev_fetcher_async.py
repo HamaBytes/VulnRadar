@@ -22,7 +22,7 @@ async def get_kev_cves(session: aiohttp.ClientSession | None = None) -> list[dic
 
 
 def _clean_text(text: Any) -> Any:
-    """Replace common unicode symbols with standard ASCII equivalents."""
+    """Replace common Unicode symbols with standard ASCII equivalents."""
     if not isinstance(text, str):
         return text
     replacements = {
