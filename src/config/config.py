@@ -13,6 +13,7 @@ class Config:
     DB_PORT = os.getenv("DB_PORT", "5432")
     DB_DRIVER = os.getenv("DB_DRIVER", "postgresql+psycopg2")
     NVD_API_KEY = os.getenv("NVD_API_KEY") or os.getenv("NPV_API_KEY")
+    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")          # Optional: raises GitHub API rate-limit
 
     @classmethod
     def database_url(cls) -> str:

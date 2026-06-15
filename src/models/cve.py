@@ -28,6 +28,7 @@ class Cve(Base):
     configurations = relationship("CveConfiguration", back_populates="cve", cascade="all, delete-orphan")
     references = relationship("CveReference", back_populates="cve", cascade="all, delete-orphan")
     epss = relationship("Epss", back_populates="cve", cascade="all, delete-orphan")
+    exploit_references = relationship("ExploitReference", back_populates="cve", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {

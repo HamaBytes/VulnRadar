@@ -7,9 +7,12 @@ from urllib.parse import urlencode
 
 import aiohttp
 
-from src.models.nvd import NvdApiResponse
 from src.config.config import Config
+from src.models.nvd import NvdApiResponse
+import src.services.logger as logger
 
+# Create module-level logger (singleton pattern)
+_logger = logger.Logger("nvd_fetch", level="DEBUG", log_file="logs/nvd_fetch.log")
 
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 
@@ -53,14 +56,24 @@ async def fetch_page(
     request_url = f"{NVD_API_URL}?{urlencode(params)}"
     headers = _build_headers()
 
+    _logger.debug(f"Fetching NVD page: startIndex={start_index}, resultsPerPage={results_per_page}")
+    if keyword:
+        _logger.debug(f"Keyword search: {keyword}")
+    if cve_id:
+        _logger.debug(f"Specific CVE: {cve_id}")
+
     try:
         async with session.get(request_url, headers=headers, timeout=30) as resp:
             resp.raise_for_status()
             payload = await resp.json()
+            _logger.info(f"Successfully fetched page at index {start_index}, got {len(payload.get('vulnerabilities', []))} CVEs")
+
     except aiohttp.ClientError as exc:
-        # TODO: replace with your logging framework
-        # logger.exception("Error fetching NVD page", extra={"url": request_url})
+        _logger.error(f"Failed to fetch NVD page: {exc}", extra={"url": request_url, "startIndex": start_index})
         raise RuntimeError(f"Failed to fetch NVD data: {exc}") from exc
+    except Exception as exc:
+        _logger.exception(f"Unexpected error parsing NVD response: {exc}")
+        raise RuntimeError(f"Failed to parse NVD data: {exc}") from exc
 
     return NvdApiResponse.from_dict(payload)
 
@@ -89,8 +102,13 @@ async def iter_vulnerabilities(
 
     start_index = 0
     total_results: Optional[int] = None
+    fetched_count = 0
+
+    _logger.info(f"Starting NVD vulnerability iteration: keyword={keyword}, max_results={max_results}")
 
     while start_index < max_results:
+        _logger.debug(f"Fetching page {start_index // results_per_page + 1}: startIndex={start_index}")
+
         page = await fetch_page(
             session,
             keyword=keyword,
@@ -104,22 +122,32 @@ async def iter_vulnerabilities(
         if total_results is None:
             total_results = getattr(page, "totalResults", None)
             if total_results is None:
-                # If your model uses a different field name, adjust here
                 total_results = getattr(page, "total_results", 0)
+            _logger.info(f"NVD total results: {total_results}")
+
+        # Count vulnerabilities
+        items = getattr(page, "vulnerabilities", []) or []
+        fetched_count += len(items)
+        _logger.info(f"Page {start_index // results_per_page + 1}: {len(items)} CVEs (total fetched: {fetched_count})")
 
         # No results on this page → stop
-        if not getattr(page, "vulnerabilities", None):
+        if not items:
+            _logger.warning("No more results returned, stopping iteration")
             break
 
         start_index += results_per_page
 
         # Stop if we reached NVD total
         if total_results is not None and start_index >= total_results:
+            _logger.info(f"Reached NVD total ({total_results}), stopping")
             break
 
         # Stop if we reached our own max_results cap
         if start_index >= max_results:
+            _logger.info(f"Reached max_results cap ({max_results}), stopping")
             break
+
+    _logger.info(f"Iteration complete: fetched {fetched_count} total CVEs")
 
 
 async def fetch_vulnerabilities_flat(
@@ -128,7 +156,7 @@ async def fetch_vulnerabilities_flat(
     keyword: Optional[str] = None,
     max_results: int = 1000,
     results_per_page: int = 200,
-):
+) -> list[dict]:
     """
     Convenience helper that flattens all pages into a single list of
     vulnerability items (not NvdApiResponse objects).
@@ -136,6 +164,8 @@ async def fetch_vulnerabilities_flat(
     Returns the combined list of `vulnerabilities` entries.
     """
     all_items: list[dict] = []
+
+    _logger.info(f"Fetching all vulnerabilities flat: keyword={keyword}, max_results={max_results}")
 
     async for page in iter_vulnerabilities(
         session,
@@ -146,7 +176,12 @@ async def fetch_vulnerabilities_flat(
         items = getattr(page, "vulnerabilities", []) or []
         all_items.extend(items)
 
+        _logger.debug(f"Extended list: now have {len(all_items)} items")
+
         if len(all_items) >= max_results:
+            _logger.info(f"Reached max_results limit, truncating to {max_results}")
+            all_items = all_items[:max_results]
             break
 
+    _logger.info(f"Fetch complete: returned {len(all_items)} vulnerabilities")
     return all_items

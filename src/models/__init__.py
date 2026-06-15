@@ -13,3 +13,4 @@ from src.models.nvd import (
     NvdCve,
     NvdVulnerability,
 )
+from src.models.exploit import ExploitReference
