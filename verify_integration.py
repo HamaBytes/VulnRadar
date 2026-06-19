@@ -3,7 +3,7 @@ import json
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-from fetchers import run_enrichment_pipeline
+from src.fetchers.pipelines import run_enrichment_pipeline
 async def main():
     print("=" * 70)
     print("Running enrichment pipeline (KEV + EPSS + NVD) for top 3 CVEs...")

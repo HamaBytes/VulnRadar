@@ -14,3 +14,5 @@ from src.models.nvd import (
     NvdVulnerability,
 )
 from src.models.exploit import ExploitReference
+from src.models.users import User
+from src.models.projects import Project, ProjectItem

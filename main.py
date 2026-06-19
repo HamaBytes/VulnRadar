@@ -1,5 +1,7 @@
 import logging
 import os
+import aiohttp_jinja2
+import jinja2
 from aiohttp import web
 
 from src.api.router import setup_routes
@@ -31,6 +33,12 @@ def create_app() -> web.Application:
     # 1. Initialize app with Rate Limiting middleware (60 req/min limit)
     app = web.Application(
         middlewares=[rate_limiter_middleware(requests_per_minute=60)]
+    )
+    
+    # Initialize aiohttp_jinja2 template loader
+    aiohttp_jinja2.setup(
+        app,
+        loader=jinja2.FileSystemLoader("src/templates")
     )
     
     # 2. Register central router endpoints

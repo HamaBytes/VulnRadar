@@ -1,4 +1,5 @@
 from __future__ import annotations
+import socket
 import aiohttp
 from typing import Any
 from src.config.config import Config
@@ -22,7 +23,8 @@ async def get_kev_cves(session: aiohttp.ClientSession | None = None) -> list[dic
 
     if session is None:
         _log.debug("Creating temporary aiohttp.ClientSession")
-        async with aiohttp.ClientSession(headers=headers) as local_session:
+        connector = aiohttp.TCPConnector(family=socket.AF_INET, resolver=aiohttp.ThreadedResolver())
+        async with aiohttp.ClientSession(headers=headers, connector=connector, trust_env=True) as local_session:
             return await _fetch_and_parse(local_session)
     else:
         _log.debug("Using provided aiohttp.ClientSession")

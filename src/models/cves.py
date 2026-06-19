@@ -6,6 +6,8 @@ from src.models.db_base import Base
 from src.models.epss import Epss
 from src.models.reference import CveReference
 from src.models.weakness import CveWeakness, CveWeaknessDescription
+from src.models.users import User
+from src.models.projects import Project, ProjectItem
 
 cves = Cve
 
@@ -23,5 +25,8 @@ __all__ = [
     "CvssDataV2",
     "CvssMetricV2",
     "Epss",
+    "User",
+    "Project",
+    "ProjectItem",
     "cves",
 ]

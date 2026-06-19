@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import AsyncIterator, Optional
 from urllib.parse import urlencode
 
@@ -62,18 +63,43 @@ async def fetch_page(
     if cve_id:
         _logger.debug(f"Specific CVE: {cve_id}")
 
-    try:
-        async with session.get(request_url, headers=headers, timeout=30) as resp:
-            resp.raise_for_status()
-            payload = await resp.json()
-            _logger.info(f"Successfully fetched page at index {start_index}, got {len(payload.get('vulnerabilities', []))} CVEs")
+    max_retries = 3
+    retry_delay = 2.0
+    payload = None
 
-    except aiohttp.ClientError as exc:
-        _logger.error(f"Failed to fetch NVD page: {exc}", extra={"url": request_url, "startIndex": start_index})
-        raise RuntimeError(f"Failed to fetch NVD data: {exc}") from exc
-    except Exception as exc:
-        _logger.exception(f"Unexpected error parsing NVD response: {exc}")
-        raise RuntimeError(f"Failed to parse NVD data: {exc}") from exc
+    for attempt in range(max_retries + 1):
+        try:
+            async with session.get(request_url, headers=headers, timeout=30) as resp:
+                if resp.status in (503, 502, 504, 429) and attempt < max_retries:
+                    _logger.warning(
+                        f"NVD API returned {resp.status} (attempt {attempt+1}/{max_retries+1}). Retrying in {retry_delay}s...",
+                        extra={"url": request_url}
+                    )
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                
+                resp.raise_for_status()
+                payload = await resp.json()
+                _logger.info(f"Successfully fetched page at index {start_index}, got {len(payload.get('vulnerabilities', []))} CVEs")
+                break
+        except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+            if attempt < max_retries:
+                _logger.warning(
+                    f"NVD fetch connection error: {exc} (attempt {attempt+1}/{max_retries+1}). Retrying in {retry_delay}s...",
+                    extra={"url": request_url}
+                )
+                await asyncio.sleep(retry_delay)
+                retry_delay *= 2
+                continue
+            _logger.error(f"Failed to fetch NVD page after {max_retries+1} attempts: {exc}", extra={"url": request_url, "startIndex": start_index})
+            raise RuntimeError(f"Failed to fetch NVD data after {max_retries+1} attempts: {exc}") from exc
+        except Exception as exc:
+            _logger.exception(f"Unexpected error parsing NVD response: {exc}")
+            raise RuntimeError(f"Failed to parse NVD data: {exc}") from exc
+
+    if payload is None:
+        raise RuntimeError(f"Failed to fetch NVD page: payload is None after retries")
 
     return NvdApiResponse.from_dict(payload)
 

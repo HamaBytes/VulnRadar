@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, date
+import socket
 from typing import Any, Optional, Callable
 
 import aiohttp
@@ -36,7 +37,8 @@ async def run_enrichment_pipeline(
     :param end_date: Optional end date to manually filter CISA dateAdded.
     :param on_progress: Optional callback on_progress(current, total, stage).
     """
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(family=socket.AF_INET, resolver=aiohttp.ThreadedResolver())
+    async with aiohttp.ClientSession(connector=connector, trust_env=True) as session:
         # Step 1: Fetch KEVs
         logger.info("Fetching KEV catalog...")
         kevs = await get_kev_cves(session)
