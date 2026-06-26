@@ -1,0 +1,25 @@
+{# templates/partials/flash_messages.html #}
+{% if error %}
+    <div class="flash-msg flash-error">
+        {{ error }}
+    </div>
+{% endif %}
+
+{% if messages %}
+    {% for msg in messages %}
+        <div class="flash-msg {% if msg.tags %}flash-{{ msg.tags }}{% endif %}">
+            {{ msg }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if warnings %}
+    <div class="flash-msg flash-error" style="background: #fffbeb; color: #92400e; border-color: #fef3c7;">
+        <strong>Warnings:</strong>
+        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.25rem;">
+            {% for warning in warnings %}
+                <li>{{ warning }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

@@ -1,0 +1,131 @@
+{# templates/projects/detail.html #}
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div>
+            <nav style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                <a href="/projects" style="color: var(--primary); text-decoration: none;">Projects</a> / {{ project.name }}
+            </nav>
+            <h1 style="margin: 0; font-size: 2rem;">{{ project.name }}</h1>
+            <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">{{ project.description or 'No description provided.' }}</p>
+        </div>
+        <div style="text-align: right; font-size: 0.875rem; color: var(--text-muted);">
+            Created on {{ project.created_at.strftime('%Y-%m-%d') }}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="card" style="padding: 1rem;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Total Items</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">{{ items|length }}</div>
+        </div>
+        <div class="card" style="padding: 1rem; border-left: 4px solid var(--danger);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">KEV items</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--kev-text);">{{ items|selectattr('is_kev', 'equalto', True)|list|length }}</div>
+        </div>
+        <div class="card" style="padding: 1rem; border-left: 4px solid var(--warning);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">High Risk (≥7.0)</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">{{ items|selectattr('risk_score', 'ge', 7.0)|list|length }}</div>
+        </div>
+    </div>
+</header>
+
+<div class="card" style="padding: 1rem; margin-bottom: 1.5rem; background: #f8fafc;">
+    <form method="get" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="status" style="font-size: 0.875rem; font-weight: 600;">Status:</label>
+            <select name="status" id="status" class="form-control" style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                <option value="all">All statuses</option>
+                <option value="analysis">Analysis</option>
+                <option value="mitigation_planned">Mitigation Planned</option>
+                <option value="remediating">Remediating</option>
+                <option value="risk_accepted">Risk Accepted</option>
+            </select>
+        </div>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" name="high_risk_only" value="1"> Only high risk
+        </label>
+        <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.75rem;">Apply Filters</button>
+    </form>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table style="margin-top: 0;">
+            <thead>
+                <tr>
+                    <th style="padding-left: 1.5rem;">Asset</th>
+                    <th>CVE</th>
+                    <th>KEV</th>
+                    <th>CVSS</th>
+                    <th>EPSS</th>
+                    <th>Exploit</th>
+                    <th>NVD State</th>
+                    <th>Risk</th>
+                    <th>Status</th>
+                    <th style="padding-right: 1.5rem;">Info</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td style="padding-left: 1.5rem;">
+                        <span style="font-weight: 500;">{{ item.asset_name or item.hostname or item.ip or 'Global' }}</span>
+                    </td>
+                    <td>
+                        <a href="/cves/{{ item.cve_id }}" style="font-family: monospace; font-weight: 600; text-decoration: none; color: var(--primary);">{{ item.cve_id }}</a>
+                    </td>
+                    <td>
+                        {% if item.is_kev %}<span class="badge badge-kev">KEV</span>{% else %}—{% endif %}
+                    </td>
+                    <td><span style="font-weight: 500;">{{ item.cvss_v3 or '—' }}</span></td>
+                    <td><span style="color: var(--text-muted);">{{ (item.epss * 100)|round(2) if item.epss else '—' }}%</span></td>
+                    <td>
+                        {% if item.has_exploit %}
+                            <span style="color: var(--danger); font-weight: 700;">YES</span>
+                        {% else %}NO{% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if item.nvd_state == 'not_scheduled' %}badge-nvd-not{% elif item.nvd_state == 'full' %}badge-nvd-full{% else %}badge-outline{% endif %}">
+                            {{ item.nvd_state|replace('_', ' ') }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="padding: 0.2rem 0.4rem; border-radius: 4px; font-weight: 700; background: {% if item.risk_score >= 7 %}#fee2e2{% elif item.risk_score >= 4 %}#fef3c7{% else %}#dcfce7{% endif %}; color: {% if item.risk_score >= 7 %}#991b1b{% elif item.risk_score >= 4 %}#92400e{% else %}#166534{% endif %};">
+                            {{ item.risk_score|round(1) }}
+                        </span>
+                    </td>
+                    <td>
+                        <form action="/items/{{ item.id }}/update-status" method="post">
+                            <select name="status" onchange="this.form.submit()" class="form-control" style="font-size: 0.75rem; padding: 0.15rem; width: auto; background: transparent; border-color: transparent;">
+                                <option value="analysis" {% if item.status == 'analysis' %}selected{% endif %}>Analysis</option>
+                                <option value="mitigation_planned" {% if item.status == 'mitigation_planned' %}selected{% endif %}>Planned</option>
+                                <option value="remediating" {% if item.status == 'remediating' %}selected{% endif %}>Remediating</option>
+                                <option value="risk_accepted" {% if item.status == 'risk_accepted' %}selected{% endif %}>Accepted</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td style="padding-right: 1.5rem;">
+                        {% if item.ai_summary %}
+                        <details>
+                            <summary style="cursor: pointer; list-style: none; color: var(--primary);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16h.01"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/><path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9z"/></svg>
+                            </summary>
+                            <div style="position: absolute; right: 2rem; width: 300px; padding: 1rem; background: white; border: 1px solid var(--border); border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10; margin-top: 0.5rem; font-size: 0.8rem; line-height: 1.4;">
+                                <strong style="display: block; margin-bottom: 0.5rem;">AI Insight</strong>
+                                {{ item.ai_summary }}
+                            </div>
+                        </details>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

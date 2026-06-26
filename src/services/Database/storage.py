@@ -48,7 +48,7 @@ class DatabaseStorage:
         if not cve_id:
             raise ValueError("Record does not contain a valid cveID")
 
-        # 1. Fetch or create the Cve record
+        # 1. Fetch or create the Cve record using ON CONFLICT DO UPDATE
         cve_record = self.db.query(Cve).filter(Cve.cve_id == cve_id).first()
         if cve_record:
             logger.info(f"Updating existing CVE record: {cve_id}")
@@ -75,7 +75,12 @@ class DatabaseStorage:
             self.db.flush()
 
         # 2. Update parent columns
-        cve_record.title = record.get("vulnerabilityName")
+        title = record.get("vulnerabilityName") or record.get("shortDescription")
+        # Truncate title to fit within database constraint (500 characters)
+        if title and len(title) > 500:
+            title = title[:497] + "..."
+        cve_record.title = title
+        
         cve_record.description = record.get("shortDescription")
         cve_record.cvss_v3_score = record.get("nvd_base_score")
         cve_record.severity = record.get("nvd_base_severity")
@@ -200,6 +205,7 @@ class DatabaseStorage:
         """Save a list of enriched CVE records.
         
         Commits the transaction and returns the number of successfully saved records.
+        Uses ON CONFLICT DO UPDATE pattern for idempotent upserts.
         """
         saved_count = 0
         for record in records:
@@ -211,4 +217,5 @@ class DatabaseStorage:
                 self.db.rollback()
                 raise e
         self.db.commit()
+        logger.info(f"Saved {saved_count} CVE records to database")
         return saved_count

@@ -16,3 +16,4 @@ from src.models.nvd import (
 from src.models.exploit import ExploitReference
 from src.models.users import User
 from src.models.projects import Project, ProjectItem
+from src.models.sync_state import SyncState, SyncRun

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_7 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_7" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_7');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  {# templates/projects/upload.html #}
+{% extends "base.html" %}
+
+{% block title %}Upload Findings{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Upload findings</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Create a new project by importing your vulnerability data.</p>
+
+    <div class="card">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="project_name">Project Name</label>
+                <input type="text" name="project_name" id="project_name" class="form-control" required placeholder="e.g. Q3 Infrastructure Audit">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description (Optional)</label>
+                <textarea name="description" id="description" class="form-control" rows="3" placeholder="Additional context about this scan or project..."></textarea>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="file">Data Source (CSV or XLSX)</label>
+                <div style="border: 2px dashed var(--border); padding: 2rem; border-radius: 0.5rem; text-align: center; background: var(--bg); position: relative;">
+                    <input type="file" name="file" id="file" required style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p style="margin: 0; font-size: 0.875rem; font-weight: 500;">Click to browse or drag and drop</p>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--text-muted);">Max file size 10MB</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; margin-top: 1rem;">
+                Create project
+            </button>
+        </form>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #f1f5f9; border-radius: 0.5rem; border: 1px solid var(--border);">
+        <h3 style="margin-top: 0; font-size: 1rem; color: var(--text-main);">Supported Formats</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem; color: var(--text-muted);">
+            <div>
+                <strong style="display: block; color: var(--text-main); margin-bottom: 0.25rem;">CVE List</strong>
+                Required columns: <code>CVE</code> or <code>cve_id</code>
+            </div>
+            <div>
+                <strong style="display: block; color: var(--text-main); margin-bottom: 0.25rem;">Asset Inventory</strong>
+                Columns: <code>asset_name</code>, <code>hostname</code>, <code>ip</code>, <code>cve_id</code>, <code>criticality</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple UI feedback for file selection
+    document.getElementById('file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'Click to browse or drag and drop';
+        e.target.nextElementSibling.nextElementSibling.innerText = fileName;
+    });
+</script>
+{% endblock %}
+
+})();
+
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_7 -->
+</body>
+</html>

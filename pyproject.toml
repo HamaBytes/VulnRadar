@@ -9,6 +9,4 @@ dependencies = [
     "sqlalchemy>=2.0.50",
     "psycopg2-binary>=2.9.0",
     "rich>=15.0.0",
-    "logger>=1.4",
-    "fetchers>=0.1.0",
 ]

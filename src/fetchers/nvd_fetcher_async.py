@@ -35,6 +35,8 @@ async def fetch_page(
     cve_id: Optional[str] = None,
     start_index: int = 0,
     results_per_page: int = 200,
+    last_modified_start: Optional[str] = None,
+    last_modified_end: Optional[str] = None,
 ) -> NvdApiResponse:
     """
     Fetch a single page of NVD CVEs.
@@ -44,6 +46,8 @@ async def fetch_page(
     :param cve_id: Optional cveId parameter to fetch a specific CVE.
     :param start_index: Pagination start index.
     :param results_per_page: Number of CVEs per page (NVD max is 200).
+    :param last_modified_start: Optional lastModStartDate parameter (ISO 8601 format).
+    :param last_modified_end: Optional lastModEndDate parameter (ISO 8601 format).
     """
     params: dict[str, str | int] = {
         "resultsPerPage": results_per_page,
@@ -53,6 +57,10 @@ async def fetch_page(
         params["keywordSearch"] = keyword
     if cve_id:
         params["cveId"] = cve_id
+    if last_modified_start:
+        params["lastModStartDate"] = last_modified_start
+    if last_modified_end:
+        params["lastModEndDate"] = last_modified_end
 
     request_url = f"{NVD_API_URL}?{urlencode(params)}"
     headers = _build_headers()
@@ -62,21 +70,23 @@ async def fetch_page(
         _logger.debug(f"Keyword search: {keyword}")
     if cve_id:
         _logger.debug(f"Specific CVE: {cve_id}")
+    if last_modified_start or last_modified_end:
+        _logger.debug(f"Date range: {last_modified_start} to {last_modified_end}")
 
-    max_retries = 3
-    retry_delay = 2.0
+    max_retries = 5
+    retry_delay = 5.0
     payload = None
 
     for attempt in range(max_retries + 1):
         try:
-            async with session.get(request_url, headers=headers, timeout=30) as resp:
+            async with session.get(request_url, headers=headers, timeout=60) as resp:
                 if resp.status in (503, 502, 504, 429) and attempt < max_retries:
                     _logger.warning(
                         f"NVD API returned {resp.status} (attempt {attempt+1}/{max_retries+1}). Retrying in {retry_delay}s...",
                         extra={"url": request_url}
                     )
                     await asyncio.sleep(retry_delay)
-                    retry_delay *= 2
+                    retry_delay = min(retry_delay * 2, 60)  # Cap at 60 seconds
                     continue
                 
                 resp.raise_for_status()
@@ -90,7 +100,7 @@ async def fetch_page(
                     extra={"url": request_url}
                 )
                 await asyncio.sleep(retry_delay)
-                retry_delay *= 2
+                retry_delay = min(retry_delay * 2, 60)  # Cap at 60 seconds
                 continue
             _logger.error(f"Failed to fetch NVD page after {max_retries+1} attempts: {exc}", extra={"url": request_url, "startIndex": start_index})
             raise RuntimeError(f"Failed to fetch NVD data after {max_retries+1} attempts: {exc}") from exc
@@ -110,6 +120,8 @@ async def iter_vulnerabilities(
     keyword: Optional[str] = None,
     max_results: int = 10_000,
     results_per_page: int = 200,
+    last_modified_start: Optional[str] = None,
+    last_modified_end: Optional[str] = None,
 ) -> AsyncIterator[NvdApiResponse]:
     """
     Iterate over NVD pages for a given query.
@@ -122,6 +134,8 @@ async def iter_vulnerabilities(
     :param keyword: Optional keywordSearch parameter.
     :param max_results: Hard cap to avoid pulling the entire NVD.
     :param results_per_page: Page size (<= 200 recommended).
+    :param last_modified_start: Optional lastModStartDate parameter (ISO 8601 format).
+    :param last_modified_end: Optional lastModEndDate parameter (ISO 8601 format).
     """
     if results_per_page > 200:
         results_per_page = 200
@@ -130,7 +144,7 @@ async def iter_vulnerabilities(
     total_results: Optional[int] = None
     fetched_count = 0
 
-    _logger.info(f"Starting NVD vulnerability iteration: keyword={keyword}, max_results={max_results}")
+    _logger.info(f"Starting NVD vulnerability iteration: keyword={keyword}, max_results={max_results}, date_range={last_modified_start} to {last_modified_end}")
 
     while start_index < max_results:
         _logger.debug(f"Fetching page {start_index // results_per_page + 1}: startIndex={start_index}")
@@ -140,6 +154,8 @@ async def iter_vulnerabilities(
             keyword=keyword,
             start_index=start_index,
             results_per_page=results_per_page,
+            last_modified_start=last_modified_start,
+            last_modified_end=last_modified_end,
         )
 
         yield page
@@ -182,6 +198,8 @@ async def fetch_vulnerabilities_flat(
     keyword: Optional[str] = None,
     max_results: int = 1000,
     results_per_page: int = 200,
+    last_modified_start: Optional[str] = None,
+    last_modified_end: Optional[str] = None,
 ) -> list[dict]:
     """
     Convenience helper that flattens all pages into a single list of
@@ -191,13 +209,15 @@ async def fetch_vulnerabilities_flat(
     """
     all_items: list[dict] = []
 
-    _logger.info(f"Fetching all vulnerabilities flat: keyword={keyword}, max_results={max_results}")
+    _logger.info(f"Fetching all vulnerabilities flat: keyword={keyword}, max_results={max_results}, date_range={last_modified_start} to {last_modified_end}")
 
     async for page in iter_vulnerabilities(
         session,
         keyword=keyword,
         max_results=max_results,
         results_per_page=results_per_page,
+        last_modified_start=last_modified_start,
+        last_modified_end=last_modified_end,
     ):
         items = getattr(page, "vulnerabilities", []) or []
         all_items.extend(items)

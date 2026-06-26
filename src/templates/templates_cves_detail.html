@@ -1,0 +1,139 @@
+{# templates/cves/detail.html #}
+{% extends "base.html" %}
+
+{% block title %}{{ cve.cve_id }}{% endblock %}
+
+{% block content %}
+<header style="margin-bottom: 2.5rem;">
+    <nav style="font-size: 0.875rem; margin-bottom: 1rem;">
+        <a href="/projects" style="color: var(--primary); text-decoration: none;">Projects</a> / Intelligence / {{ cve.cve_id }}
+    </nav>
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <h1 style="margin: 0; font-size: 2.5rem; font-family: monospace;">{{ cve.cve_id }}</h1>
+        {% if cve.is_kev %}<span class="badge badge-kev" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;">CISA KEV</span>{% endif %}
+        <span class="badge {% if cve.nvd_state == 'not_scheduled' %}badge-nvd-not{% else %}badge-nvd-full{% endif %}" style="padding: 0.4rem 0.8rem; font-size: 0.875rem;">
+            NVD: {{ cve.nvd_state|replace('_', ' ') }}
+        </span>
+    </div>
+    <p style="font-size: 1.125rem; font-weight: 600; margin: 0.75rem 0 0 0; color: var(--text-main);">{{ cve.title }}</p>
+</header>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Left Column -->
+    <div>
+        {% if cve.ai_summary %}
+        <section class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--info); background: #f0f7ff;">
+            <h2 style="margin-top: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 7v5l3 3"/></svg>
+                AI Summary
+            </h2>
+            <p style="margin-bottom: 0; font-size: 1rem; line-height: 1.6; color: #1e40af;">{{ cve.ai_summary }}</p>
+        </section>
+        {% endif %}
+
+        <section style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Description</h2>
+            <div class="card" style="line-height: 1.7; color: #334155;">
+                {{ cve.description }}
+            </div>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Exploit Evidence</h2>
+            <div class="card" style="padding: 0;">
+                {% if cve.exploit_references %}
+                    <table style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 1.5rem;">Source</th>
+                                <th>Title</th>
+                                <th style="text-align: right; padding-right: 1.5rem;">Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ref in cve.exploit_references %}
+                            <tr>
+                                <td style="padding-left: 1.5rem;"><span class="badge badge-outline" style="border: 1px solid var(--border);">{{ ref.source }}</span></td>
+                                <td>{{ ref.title or 'N/A' }}</td>
+                                <td style="text-align: right; padding-right: 1.5rem;">
+                                    <a href="{{ ref.url }}" target="_blank" style="color: var(--primary);">View source ↗</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                        No public exploit references found.
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+        <section style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Metrics</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- CVSS -->
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">CVSS v3.1</div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: {% if cve.cvss_v3 >= 9 %}#991b1b{% elif cve.cvss_v3 >= 7 %}#b91c1c{% else %}#166534{% endif %};">
+                        {{ cve.cvss_v3 or 'N/A' }}
+                    </div>
+                    <div class="badge" style="background: #f1f5f9;">{{ cve.severity or 'UNKNOWN' }}</div>
+                </div>
+
+                <!-- EPSS -->
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">EPSS Score</div>
+                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">
+                        {{ (cve.epss * 100)|round(2) if cve.epss else 'N/A' }}%
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">
+                        Percentile: <strong>{{ (cve.epss_percentile * 100)|round(1) if cve.epss_percentile else '—' }}%</strong>
+                    </div>
+                </div>
+
+                <!-- Exploit Status -->
+                <div class="card" style="text-align: center; {% if cve.has_exploit %}background: #fee2e2; border-color: #fecaca;{% endif %}">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">Known Exploits</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: {% if cve.has_exploit %}#991b1b{% else %}var(--text-muted){% endif %};">
+                        {% if cve.has_exploit %}EXPLOITABLE{% else %}NONE KNOWN{% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% if cve.nvd_state == 'not_scheduled' %}
+        <div class="card" style="background: #fffbeb; border-color: #fef3c7; color: #92400e;">
+            <h3 style="margin-top: 0; font-size: 0.875rem; font-weight: 700;">NVD Gap Status</h3>
+            <p style="font-size: 0.875rem; margin-bottom: 0;">This CVE is currently in the "Not Scheduled" NVD state, meaning official analysis may be delayed. VulnRadar uses automated heuristics to estimate risk in the interim.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<section style="margin-top: 2rem;">
+    <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Raw Intelligence</h2>
+    <div class="card" style="padding: 0;">
+        <table style="margin: 0;">
+            <tbody>
+                <tr>
+                    <td style="font-weight: 600; width: 200px; padding-left: 1.5rem;">NVD State</td>
+                    <td><code>{{ cve.nvd_state }}</code></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; padding-left: 1.5rem;">EPSS Raw</td>
+                    <td><code>{{ cve.epss }}</code></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600; padding-left: 1.5rem;">EPSS Percentile</td>
+                    <td><code>{{ cve.epss_percentile }}</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
