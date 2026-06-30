@@ -1,0 +1,162 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@theme {
+    /* fonts (with system fallbacks in case the Google Fonts request fails) */
+    --font-display-xl: "Chakra Petch", "Segoe UI", sans-serif;
+    --font-headline-lg: "Chakra Petch", "Segoe UI", sans-serif;
+    --font-headline-md: "Chakra Petch", "Segoe UI", sans-serif;
+    --font-body-lg: "Inter", system-ui, sans-serif;
+    --font-body-md: "Inter", system-ui, sans-serif;
+    --font-label-bold: "JetBrains Mono", ui-monospace, monospace;
+    --font-code-sm: "JetBrains Mono", ui-monospace, monospace;
+
+    /* type scale (size/line-height pairs) */
+    --text-display-xl: 4.5rem;
+    --text-display-xl--line-height: 1.05;
+    --text-display-xl-mobile: 2.75rem;
+    --text-display-xl-mobile--line-height: 1.1;
+    --text-headline-lg: 2rem;
+    --text-headline-lg--line-height: 1.2;
+    --text-headline-md: 1.375rem;
+    --text-headline-md--line-height: 1.3;
+    --text-body-lg: 1.125rem;
+    --text-body-lg--line-height: 1.6;
+    --text-body-md: 0.9375rem;
+    --text-body-md--line-height: 1.6;
+    --text-label-bold: 0.75rem;
+    --text-label-bold--line-height: 1.4;
+    --text-code-sm: 0.8125rem;
+    --text-code-sm--line-height: 1.5;
+
+    /* colors -> point at runtime-switchable variables below */
+    --color-background: var(--c-background);
+    --color-on-background: var(--c-on-background);
+    --color-surface-container-lowest: var(--c-surface-container-lowest);
+    --color-surface-container-highest: var(--c-surface-container-highest);
+    --color-on-surface: var(--c-on-surface);
+    --color-on-surface-variant: var(--c-on-surface-variant);
+    --color-primary: var(--c-primary);
+    --color-on-primary: var(--c-on-primary);
+    --color-secondary: var(--c-secondary);
+    --color-on-secondary: var(--c-on-secondary);
+    --color-outline: var(--c-outline);
+    --color-outline-variant: var(--c-outline-variant);
+    --color-error: var(--c-error);
+
+    /* spacing (structural, same in both themes) */
+    --spacing-gutter: 1.5rem;
+    --spacing-margin-desktop: 3rem;
+}
+
+/* ── Dark theme (default) ───────────────────────────────────── */
+:root,
+.dark {
+    color-scheme: dark;
+    --c-background: #0a0e16;
+    --c-on-background: #e6ebf5;
+    --c-surface-container-lowest: #0d1220;
+    --c-surface-container-highest: #1a2236;
+    --c-on-surface: #e6ebf5;
+    --c-on-surface-variant: #a8b4cc;
+    --c-primary: #adc6ff;
+    --c-on-primary: #0a0e16;
+    --c-secondary: #5de6ff;
+    --c-on-secondary: #0a0e16;
+    --c-outline: #5c6680;
+    --c-outline-variant: #2a3450;
+    --c-error: #ff6b6b;
+}
+
+/* ── Light theme ─────────────────────────────────────────────── */
+.light {
+    color-scheme: light;
+    --c-background: #f4f6fb;
+    --c-on-background: #0e1422;
+    --c-surface-container-lowest: #ffffff;
+    --c-surface-container-highest: #e8ecf5;
+    --c-on-surface: #0e1422;
+    --c-on-surface-variant: #4a5570;
+    --c-primary: #2f5fd6;
+    --c-on-primary: #ffffff;
+    --c-secondary: #00798c;
+    --c-on-secondary: #ffffff;
+    --c-outline: #8a93ab;
+    --c-outline-variant: #d3d9e8;
+    --c-error: #c4233a;
+}
+
+/* ── Base layer: lives below Tailwind's utilities, so any utility
+   class (hover:, group-hover:, border-primary/50, etc.) always wins ── */
+@layer base {
+    * {
+        transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease, stroke 0.25s ease;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--c-primary) 35%, transparent);
+        color: var(--c-on-surface);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--c-primary);
+        outline-offset: 2px;
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--c-surface-container-lowest);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--c-outline-variant);
+        border-radius: 6px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--c-outline);
+    }
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: var(--c-outline-variant) var(--c-surface-container-lowest);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+/* ── Component layer: custom classes, deliberately layered so
+   Tailwind utilities (layered "utilities") always override them ── */
+@layer components {
+    .glass-panel {
+        background: color-mix(in srgb, var(--c-surface-container-lowest) 72%, transparent);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--c-outline-variant);
+    }
+
+    .scanline {
+        width: 100%;
+        height: 2px;
+        background: rgba(173, 198, 255, 0.2);
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        animation: scanline 6s linear infinite;
+    }
+}
+
+@keyframes scanline {
+    0% { top: 0; opacity: 0; }
+    5% { opacity: 0.5; }
+    95% { opacity: 0.5; }
+    100% { top: 100%; opacity: 0; }
+}

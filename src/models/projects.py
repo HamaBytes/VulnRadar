@@ -9,7 +9,7 @@ from src.models.db_base import Base
 
 class Project(Base):
     __tablename__ = "projects"
-
+    __table_args__ = {"schema": "vulnradar"}
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("vulnradar.users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
@@ -22,6 +22,7 @@ class Project(Base):
 
 class ProjectItem(Base):
     __tablename__ = "project_items"
+    __table_args__ = {"schema": "vulnradar"}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(Integer, ForeignKey("vulnradar.projects.id", ondelete="CASCADE"), nullable=False)

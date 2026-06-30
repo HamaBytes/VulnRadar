@@ -137,7 +137,8 @@ async def run_historical_import(
     
     db_config.init_db()
     db = db_config.SessionLocal()
-    
+    if  db_config.SessionLocal() is None :
+        db_config.init_db()
     try:
         # Get or create sync state for NVD historical import
         sync_state = db.query(SyncState).filter(SyncState.sync_type == "nvd_historical").first()

@@ -59,6 +59,8 @@ async def _run_background_sync(
         import src.config.database as db_config
         db_config.init_db()
         db = db_config.SessionLocal()
+        if db is None :
+            db_config.init_db()
         try:
             storage = DatabaseStorage(db)
             saved_count = storage.save_enriched_cves(records)

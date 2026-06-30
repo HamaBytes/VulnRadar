@@ -3,6 +3,7 @@ import os
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
+from aiohttp_middlewares import cors_middleware
 
 from src.api.router import setup_routes
 from src.api.middleware.rate_limiter import rate_limiter_middleware
@@ -18,36 +19,43 @@ async def scheduler_ctx(app: web.Application):
     manager = SchedulerManager()
     manager.register_jobs()
     manager.start()
-    
+
     app["scheduler"] = manager
-    
+
     yield
-    
+
     _log.info("Shutting down APScheduler background jobs")
     manager.shutdown()
 
 
 def create_app() -> web.Application:
     _log.info("Creating aiohttp web application")
-    
-    # 1. Initialize app with Rate Limiting middleware (60 req/min limit)
+
+    # 1. Initialize app with CORS + Rate Limiting middleware
     app = web.Application(
-        middlewares=[rate_limiter_middleware(requests_per_minute=60)]
+        middlewares=[
+            cors_middleware(
+                origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+                allow_headers=["Content-Type", "Authorization"],
+                allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            ),
+            rate_limiter_middleware(requests_per_minute=60)
+        ]
     )
-    
+
     # Initialize aiohttp_jinja2 template loader
     aiohttp_jinja2.setup(
         app,
         loader=jinja2.FileSystemLoader("src/templates")
     )
-    
+
     # 2. Register central router endpoints
     setup_routes(app)
     _log.info("Registered all API route endpoints")
-    
+
     # 3. Register background scheduler lifecycle hooks
     app.cleanup_ctx.append(scheduler_ctx)
-    
+
     log_level = os.getenv("LOG_LEVEL", "INFO")
     log_format = os.getenv("LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     _log.debug(f"LOG_LEVEL: {log_level}")

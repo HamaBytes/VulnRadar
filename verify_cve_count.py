@@ -5,7 +5,9 @@ from src.models.cve import Cve
 
 def verify_cve_count():
     """Query the database to count CVEs in the vulnradar schema."""
-    db = SessionLocal
+    db = (SessionLocal)
+    if SessionLocal is None:
+        init_db()
     try:
         count = db.query(Cve).count()
         print(f"Total CVEs in vulnradar.cves table: {count}")
