@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import aiohttp_jinja2
@@ -7,6 +8,7 @@ from aiohttp_middlewares import cors_middleware
 
 from src.api.router import setup_routes
 from src.api.middleware.rate_limiter import rate_limiter_middleware
+from src.api.middleware.auth import auth_middleware  # ADD THIS IMPORT
 from src.jobs.scheduler import SchedulerManager
 import src.services.logger as logger
 
@@ -19,6 +21,7 @@ async def scheduler_ctx(app: web.Application):
     manager = SchedulerManager()
     manager.register_jobs()
     manager.start()
+    asyncio.create_task(manager.run_sync_job())
 
     app["scheduler"] = manager
 
@@ -31,7 +34,7 @@ async def scheduler_ctx(app: web.Application):
 def create_app() -> web.Application:
     _log.info("Creating aiohttp web application")
 
-    # 1. Initialize app with CORS + Rate Limiting middleware
+    # 1. Initialize app with CORS + Auth + Rate Limiting middleware
     app = web.Application(
         middlewares=[
             cors_middleware(
@@ -39,6 +42,7 @@ def create_app() -> web.Application:
                 allow_headers=["Content-Type", "Authorization"],
                 allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             ),
+            auth_middleware,  # REMOVE () — it's a decorator, not a function call
             rate_limiter_middleware(requests_per_minute=60)
         ]
     )

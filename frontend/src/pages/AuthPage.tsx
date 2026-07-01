@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LoginForm } from '../components/auth/LoginForm';
 import { RegisterForm } from '../components/auth/RegisterForm';
-
 export function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
-
     return (
         <div className="min-h-screen bg-background text-on-background flex items-center justify-center p-gutter relative overflow-hidden">
             <div

@@ -8,13 +8,13 @@ import aiohttp_jinja2
 from aiohttp import web
 
 from src.config.config import Config
-from src.config.database import init_db
+from src.config.database import get_engine
 
 
 def _check_database() -> dict:
     """Synchronously verify the DB connection."""
     try:
-        engine = init_db()
+        engine = get_engine()
         with engine.connect() as connection:
             connection.exec_driver_sql("SELECT 1")
         return {"connected": True}

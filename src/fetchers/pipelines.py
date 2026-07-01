@@ -9,7 +9,7 @@ from sqlalchemy import func
 from src.fetchers.kev_fetcher_async import get_kev_cves
 from src.fetchers.nvd_fetcher_async import fetch_vulnerabilities_flat
 from src.services.enrichment import enrich_all_kevs
-import src.config.database as db_config
+from src.config.database import DatabaseConnector, db_session_ro, init_db
 import src.models.cves  # Ensure all ORM models are registered
 from src.models.cve import Cve
 from src.models.sync_state import SyncState, SyncRun
@@ -22,18 +22,26 @@ async def run_enrichment_pipeline(
     include_epss: bool = True,
     include_nvd: bool = True,
     include_exploits: bool = True,
+    include_osv: bool = True,
+    include_github_advisories: bool = True,
+    include_vendor_advisories: bool = True,
     incremental: bool = True,
+    last_modified_watermark: Optional[datetime] = None,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     on_progress: Optional[Callable[[int, int, str], None]] = None,
 ) -> list[dict[str, Any]]:
     """Orchestrates the fetching of KEV vulnerabilities and enriching them
-    with NVD, EPSS, and exploit-intelligence data.
+    with NVD, EPSS, exploit-intelligence, OSV, GitHub Advisory, and vendor
+    advisory data.
 
     :param limit: Optional limit to restrict the number of KEVs processed.
     :param include_epss: Whether to enrich with EPSS scores.
     :param include_nvd: Whether to enrich with NVD data.
     :param include_exploits: Whether to enrich with exploit intelligence.
+    :param include_osv: Whether to enrich with OSV metadata.
+    :param include_github_advisories: Whether to enrich with GitHub Advisory metadata.
+    :param include_vendor_advisories: Whether to enrich with vendor advisory metadata.
     :param incremental: Whether to only process KEVs newer than the latest CVE in DB.
     :param start_date: Optional start date to manually filter CISA dateAdded.
     :param end_date: Optional end date to manually filter CISA dateAdded.
@@ -66,18 +74,17 @@ async def run_enrichment_pipeline(
 
         # Otherwise handle incremental DB filtering
         elif incremental:
-            max_date = None
+            max_date = last_modified_watermark
             try:
-                db_config.init_db()
-                db = db_config.SessionLocal()
-                max_date = db.query(func.max(Cve.created_at)).scalar()
-                db.close()
+                init_db()
+                with db_session_ro() as db:
+                    if max_date is None:
+                        max_date = db.query(func.max(Cve.last_modified_date)).scalar()
             except Exception as e:
                 logger.warning(f"Could not retrieve last sync date for incremental sync: {e}. Performing full fetch.")
-
             if max_date:
                 logger.info(f"Performing incremental sync since: {max_date}")
-                max_date_only = max_date.date()
+                max_date_only = max_date.date() if isinstance(max_date, datetime) else max_date
                 filtered_kevs = []
                 for k in kevs:
                     date_added_str = k.get("dateAdded")
@@ -106,6 +113,9 @@ async def run_enrichment_pipeline(
             include_epss=include_epss,
             include_nvd=include_nvd,
             include_exploits=include_exploits,
+            include_osv=True,
+            include_github_advisories=True,
+            include_vendor_advisories=True,
             on_progress=on_progress,
         )
 
@@ -135,10 +145,8 @@ async def run_historical_import(
     if end_date is None:
         end_date = date.today()
     
-    db_config.init_db()
-    db = db_config.SessionLocal()
-    if  db_config.SessionLocal() is None :
-        db_config.init_db()
+    init_db()
+    db = DatabaseConnector().create_session()
     try:
         # Get or create sync state for NVD historical import
         sync_state = db.query(SyncState).filter(SyncState.sync_type == "nvd_historical").first()

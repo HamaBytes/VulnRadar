@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 
 
 import { ThemeToggle } from '../../components/layout/ThemeToggle.tsx';
+import { useAuthStore } from '../../stores/authStore';
 import {
     Shield,
     Radar,
@@ -24,6 +25,8 @@ import {
     ArrowRight,
     Menu,
     X,
+    UserCircle2,
+    LogOut,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 // ─── Animated Counter ─────────────────────────────────────────────
@@ -272,6 +275,13 @@ function StatCard({ value, label, icon: Icon, color }: { value: React.ReactNode;
 function Navigation() {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { isAuthenticated, user, logout } = useAuthStore();
+
+    const handleLogout = () => {
+        logout();
+        setMobileOpen(false);
+        navigate('/');
+    };
 
     return (
         <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-outline-variant/30">
@@ -293,15 +303,34 @@ function Navigation() {
                     <a href="#pipeline" className="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md">Pipeline</a>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <ThemeToggle />
-                    <button
-                        onClick={() => navigate('/login')}
-                        className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-label-bold text-label-bold uppercase hover:bg-primary/90 transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(173,198,255,0.2)]"
-                    >
-                        <Terminal size={16} />
-                        System Access
-                    </button>
+                    {isAuthenticated ? (
+                        <>
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="hidden lg:flex items-center gap-2 px-4 py-2.5 border border-primary/40 text-primary font-label-bold text-label-bold uppercase hover:bg-primary/10 transition-all duration-300 active:scale-95"
+                            >
+                                <UserCircle2 size={16} />
+                                {user?.email ? 'Profile' : 'Dashboard'}
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="hidden lg:flex items-center gap-2 px-4 py-2.5 border border-error/40 text-error font-label-bold text-label-bold uppercase hover:bg-error/10 transition-all duration-300 active:scale-95"
+                            >
+                                <LogOut size={16} />
+                                Disconnect
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-label-bold text-label-bold uppercase hover:bg-primary/90 transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(173,198,255,0.2)]"
+                        >
+                            <Terminal size={16} />
+                            System Access
+                        </button>
+                    )}
                     <button
                         className="md:hidden text-primary"
                         onClick={() => setMobileOpen(!mobileOpen)}
@@ -324,13 +353,32 @@ function Navigation() {
                             <a href="#features" className="block text-on-surface-variant hover:text-primary">Capabilities</a>
                             <a href="#specs" className="block text-on-surface-variant hover:text-primary">Specifications</a>
                             <a href="#pipeline" className="block text-on-surface-variant hover:text-primary">Pipeline</a>
-                            <button
-                                onClick={() => { navigate('/login'); setMobileOpen(false); }}
-                                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary text-on-primary font-label-bold text-label-bold uppercase"
-                            >
-                                <Terminal size={16} />
-                                System Access
-                            </button>
+                            {isAuthenticated ? (
+                                <>
+                                    <button
+                                        onClick={() => { navigate('/dashboard'); setMobileOpen(false); }}
+                                        className="w-full flex items-center justify-center gap-2 px-5 py-3 border border-primary/40 text-primary font-label-bold text-label-bold uppercase"
+                                    >
+                                        <UserCircle2 size={16} />
+                                        Profile
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center justify-center gap-2 px-5 py-3 border border-error/40 text-error font-label-bold text-label-bold uppercase"
+                                    >
+                                        <LogOut size={16} />
+                                        Disconnect
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => { navigate('/login'); setMobileOpen(false); }}
+                                    className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-primary text-on-primary font-label-bold text-label-bold uppercase"
+                                >
+                                    <Terminal size={16} />
+                                    System Access
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}

@@ -13,6 +13,15 @@ from src.fetchers.exploit_fetcher_async import (
     fetch_exploit_intel_for_cves,
     enrich_records_with_exploit_intel,
 )
+from src.fetchers.osv_fetcher_async import fetch_osv_for_cves, enrich_records_with_osv
+from src.fetchers.github_advisory_fetcher_async import (
+    fetch_github_advisory_for_cves,
+    enrich_records_with_github_advisory,
+)
+from src.fetchers.vendor_advisory_fetcher_async import (
+    fetch_vendor_advisory_for_cves,
+    enrich_records_with_vendor_advisory,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +71,9 @@ async def enrich_all_kevs(
     include_epss: bool = True,
     include_nvd: bool = True,
     include_exploits: bool = True,
+    include_osv: bool = True,
+    include_github_advisories: bool = True,
+    include_vendor_advisories: bool = True,
     on_progress: Optional[Callable[[int, int, str], None]] = None,
 ) -> list[dict[str, Any]]:
     """Full enrichment pipeline: enriches KEV records with NVD, EPSS, and exploit data.
@@ -136,5 +148,51 @@ async def enrich_all_kevs(
         
         if on_progress:
             on_progress(total, total, "enriching_exploits")
+
+    # --- Step 4: OSV enrichment ---
+    if include_osv and total > 0:
+        try:
+            logger.info("Fetching OSV metadata for %d CVEs...", len(kevs))
+            cve_ids = [kev.get("cveID", "") for kev in kevs if kev.get("cveID")]
+            osv_lookup = await fetch_osv_for_cves(cve_ids, concurrency=10, timeout=30)
+            kevs = enrich_records_with_osv(kevs, osv_lookup)
+            logger.info("OSV enrichment completed for %d records.", len(kevs))
+        except Exception as e:
+            logger.warning("OSV enrichment failed: %s", e)
+            for _k in kevs:
+                _k.setdefault("osv_summary", None)
+                _k.setdefault("osv_references", [])
+                _k.setdefault("osv_severities", [])
+
+    # --- Step 5: GitHub Advisory enrichment ---
+    if include_github_advisories and total > 0:
+        try:
+            logger.info("Fetching GitHub Advisory metadata for %d CVEs...", len(kevs))
+            cve_ids = [kev.get("cveID", "") for kev in kevs if kev.get("cveID")]
+            advisory_lookup = await fetch_github_advisory_for_cves(cve_ids, concurrency=5, timeout=30)
+            kevs = enrich_records_with_github_advisory(kevs, advisory_lookup)
+            logger.info("GitHub Advisory enrichment completed for %d records.", len(kevs))
+        except Exception as e:
+            logger.warning("GitHub Advisory enrichment failed: %s", e)
+            for _k in kevs:
+                _k.setdefault("github_advisory_summary", None)
+                _k.setdefault("github_advisory_references", [])
+                _k.setdefault("github_advisory_severity", None)
+                _k.setdefault("github_advisory_package", None)
+
+    # --- Step 6: Vendor Advisory enrichment ---
+    if include_vendor_advisories and total > 0:
+        try:
+            logger.info("Fetching vendor advisory metadata for %d CVEs...", len(kevs))
+            cve_ids = [kev.get("cveID", "") for kev in kevs if kev.get("cveID")]
+            vendor_lookup = await fetch_vendor_advisory_for_cves(cve_ids, concurrency=10, timeout=30)
+            kevs = enrich_records_with_vendor_advisory(kevs, vendor_lookup)
+            logger.info("Vendor advisory enrichment completed for %d records.", len(kevs))
+        except Exception as e:
+            logger.warning("Vendor advisory enrichment failed: %s", e)
+            for _k in kevs:
+                _k.setdefault("vendor_advisory_available", False)
+                _k.setdefault("vendor_advisory_sources", [])
+                _k.setdefault("vendor_advisory_details", None)
 
     return kevs

@@ -2,7 +2,7 @@
 from aiohttp import web
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from src.config.database import SessionLocal, init_db
+from src.config.database import DatabaseConnector, init_db
 from src.models.users import User
 from src.services.security import hash_password, verify_password, create_jwt_token, verify_jwt_token
 from src.services.logger import Logger  # Adjust import path to match your project
@@ -14,13 +14,9 @@ logger = Logger(name="api_auth", level="INFO", console_output=True)
 
 def _get_db_session():
     """Get database session, initializing if needed."""
-    import src.config.database as db_module  # Import the module, not the variable
-
-    if db_module.SessionLocal is None:
-        logger.info("Database not initialized, calling init_db()")
-        db_module.init_db()
-
-    return db_module.SessionLocal()
+    connector = DatabaseConnector()
+    connector.init()
+    return connector.create_session()
 
 @routes.post("/api/v1/auth/register")
 async def register_user(request):

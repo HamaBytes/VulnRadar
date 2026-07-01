@@ -72,7 +72,7 @@ export function DashboardPage() {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
                         <StatCard
                             icon={Database}
                             label="Total CVEs"
@@ -91,56 +91,44 @@ export function DashboardPage() {
                             value="0.00"
                             color="primary"
                         />
-                        <StatCard
-                            icon={Shield}
-                            label="Projects"
-                            value="0"
-                            color="secondary"
-                        />
                     </div>
 
                     {/* Quick Actions */}
                     <div className="glass-panel p-8 mb-12">
                         <h2 className="font-headline-md text-headline-md text-on-surface uppercase mb-6">
-                            Quick Actions
+                            Operational Tools
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <ActionButton
                                 icon={Terminal}
-                                label="Create Project"
-                                description="Initialize new vulnerability assessment"
-                                onClick={() => navigate('/projects')}
+                                label="Run Pipeline"
+                                description="Trigger the sync pipeline"
+                                onClick={() => fetch('/api/v1/pipeline/sync', { credentials: 'same-origin' })}
                             />
                             <ActionButton
                                 icon={Database}
-                                label="Upload Findings"
-                                description="Import CVE list from CSV/XLSX"
-                                onClick={() => navigate('/projects')}
+                                label="Health Check"
+                                description="Check API and database status"
+                                onClick={() => fetch('/api/v1/health', { credentials: 'same-origin' })}
                             />
                             <ActionButton
                                 icon={Activity}
-                                label="Run Pipeline"
-                                description="Trigger intelligence sync"
-                                onClick={() => navigate('/pipeline')}
+                                label="Projects"
+                                description="Create and manage vulnerability projects"
+                                onClick={() => navigate('/projects')}
                             />
                         </div>
                     </div>
 
-                    {/* Empty State */}
+                    {/* Readiness Panel */}
                     <div className="glass-panel p-12 text-center">
                         <Shield size={48} className="mx-auto mb-4 text-primary/50" />
                         <h3 className="font-headline-md text-headline-md text-on-surface uppercase mb-2">
-                            No Active Projects
+                            Intelligence Workspace Ready
                         </h3>
                         <p className="text-on-surface-variant font-body-md text-body-md mb-6">
-                            Create your first project to begin vulnerability triage and risk assessment.
+                            The dashboard is prepared for vulnerability intelligence workflows and background synchronization.
                         </p>
-                        <button
-                            onClick={() => navigate('/projects')}
-                            className="px-8 py-4 bg-primary text-on-primary font-label-bold text-label-bold uppercase tracking-widest hover:bg-primary/90 transition-all"
-                        >
-                            Initialize First Project
-                        </button>
                     </div>
                 </div>
             </main>

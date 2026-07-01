@@ -1,5 +1,4 @@
 """Route handlers and dashboard for background CVE synchronization."""
-
 import asyncio
 import time
 import logging
@@ -8,7 +7,7 @@ from typing import Optional
 import aiohttp_jinja2
 from aiohttp import web
 
-from src.config.database import SessionLocal
+from src.config.database import db_session, init_db
 from src.fetchers.pipelines import run_enrichment_pipeline
 from src.services.Database.storage import DatabaseStorage
 
@@ -41,13 +40,14 @@ async def _run_background_sync(
         })
 
     try:
-        # 1. Fetch and enrich records using manual date filters and progress reporting
+        # 1. Fetch and enrich records using manual or incremental sync
+        incremental_sync = not (start_date or end_date)
         records = await run_enrichment_pipeline(
             limit=None,  # Fetch all matching KEVs
             include_epss=True,
             include_nvd=True,
             include_exploits=True,
-            incremental=False,  # Bypass incremental latest-DB logic
+            incremental=incremental_sync,
             start_date=start_date,
             end_date=end_date,
             on_progress=on_progress,
@@ -56,16 +56,10 @@ async def _run_background_sync(
         app["sync_jobs"][job_id]["stage"] = "saving"
 
         # 2. Persist to DB
-        import src.config.database as db_config
-        db_config.init_db()
-        db = db_config.SessionLocal()
-        if db is None :
-            db_config.init_db()
-        try:
+        init_db()
+        with db_session() as db:
             storage = DatabaseStorage(db)
             saved_count = storage.save_enriched_cves(records)
-        finally:
-            db.close()
 
         # Format results summary to return list of saved CVE IDs and severity
         results_summary = [

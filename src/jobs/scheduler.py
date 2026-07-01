@@ -8,7 +8,7 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from src.config.database import SessionLocal
+from src.config.database import DatabaseConnector, init_db
 from src.fetchers.pipelines import run_enrichment_pipeline
 from src.services.Database.storage import DatabaseStorage
 from src.models.sync_state import SyncState
@@ -42,7 +42,8 @@ class SchedulerManager:
         enriches them, and persists them to the database.
         """
         logger.info("Executing scheduled sync job...")
-        db = SessionLocal()
+        init_db()
+        db = DatabaseConnector().create_session()
         try:
             # Get sync state for incremental sync
             sync_state = db.query(SyncState).filter(SyncState.sync_type == "nvd_incremental").first()
@@ -74,6 +75,7 @@ class SchedulerManager:
                 include_nvd=True,
                 include_exploits=True,
                 incremental=True,
+                last_modified_watermark=last_modified_watermark,
             )
 
             if not enriched_records:

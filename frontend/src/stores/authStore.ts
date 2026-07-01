@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type {user} from '../types/auth.ts';
+import type {user} from '../types/auth.types.ts';
 interface AuthState {
     token: string | null;
     user: user | null;

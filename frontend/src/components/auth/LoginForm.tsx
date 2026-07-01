@@ -133,7 +133,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="... disabled:opacity-50"
+                        className="w-full rounded-xl bg-primary px-6 py-4 text-on-primary font-label-bold text-label-bold uppercase tracking-[0.2em] transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'AUTHENTICATING...' : 'INITIATE SESSION'}
                     </button>

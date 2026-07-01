@@ -122,7 +122,23 @@ class DatabaseStorage:
             )
             cve_record.exploit_references.append(exploit_obj)
 
-        # 6. Add detailed NVD data if nvd_cve_obj is attached
+        # 6. Add additional external references from enrichment sources
+        for ext_ref in record.get("external_references", []):
+            if isinstance(ext_ref, dict) and ext_ref.get("url"):
+                cve_record.references.append(
+                    CveReference(
+                        cve_db_id=cve_record.id,
+                        url=ext_ref.get("url"),
+                        source=ext_ref.get("source") or "external",
+                    )
+                )
+
+        # 7. Add additional tags from enrichment sources
+        for tag in record.get("additional_tags", []):
+            if isinstance(tag, str) and tag.strip():
+                cve_record.tags.append(CveTag(cve_db_id=cve_record.id, value=tag.strip()))
+
+        # 8. Add detailed NVD data if nvd_cve_obj is attached
         nvd_cve = record.get("nvd_cve_obj")
         if nvd_cve:
             # Set NVD source identifier if present

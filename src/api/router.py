@@ -26,4 +26,4 @@ def setup_routes(app: web.Application) -> None:
     # Auth routes (register, login, me)
     app.add_routes(auth_routes)
     #projects routes
-    add.add_routes(project_routes)
+    app .add_routes(project_routes)

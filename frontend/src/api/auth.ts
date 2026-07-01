@@ -1,5 +1,5 @@
 import client from './client.ts'
-import type {AuthResponse, LoginCredentials, RegisterCredentials} from '../types/auth.ts';
+import type {AuthResponse, LoginCredentials, RegisterCredentials} from '../types/auth.types.ts';
 export const register = async (data: RegisterCredentials): Promise<AuthResponse> => {
     const res = await client.post('/api/v1/auth/register', data);
     return res.data;
