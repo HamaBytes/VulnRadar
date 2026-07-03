@@ -1,0 +1,56 @@
+2026-06-29 20:02:43 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-06-29 20:02:45 | INFO     | epss_fetcher | Loaded EPSS scores for 343948 CVEs.
+2026-06-29 20:02:45 | INFO     | epss_fetcher | Enriching 3 records with EPSS data
+2026-06-29 20:02:45 | INFO     | epss_fetcher | EPSS enrichment complete: 3 matched, 0 unmatched
+2026-07-01 20:30:46 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-01 20:30:47 | INFO     | epss_fetcher | Loaded EPSS scores for 344852 CVEs.
+2026-07-01 20:30:47 | INFO     | epss_fetcher | Enriching 764 records with EPSS data
+2026-07-01 20:30:47 | INFO     | epss_fetcher | EPSS enrichment complete: 764 matched, 0 unmatched
+2026-07-01 23:32:32 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-01 23:32:33 | INFO     | epss_fetcher | Loaded EPSS scores for 344852 CVEs.
+2026-07-01 23:32:33 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-01 23:32:33 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 00:44:17 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 00:44:18 | INFO     | epss_fetcher | Loaded EPSS scores for 344852 CVEs.
+2026-07-02 00:44:18 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 00:44:18 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 01:15:37 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 01:15:39 | INFO     | epss_fetcher | Loaded EPSS scores for 344852 CVEs.
+2026-07-02 01:15:39 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 01:15:39 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 01:32:18 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 01:32:22 | INFO     | epss_fetcher | Loaded EPSS scores for 344852 CVEs.
+2026-07-02 01:32:22 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 01:32:22 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 19:49:13 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 19:49:15 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-02 19:49:15 | INFO     | epss_fetcher | Enriching 3 records with EPSS data
+2026-07-02 19:49:15 | INFO     | epss_fetcher | EPSS enrichment complete: 3 matched, 0 unmatched
+2026-07-02 20:31:23 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 20:31:26 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-02 20:31:26 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 20:31:26 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 22:20:24 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 22:21:03 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 22:22:02 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-02 22:22:02 | INFO     | epss_fetcher | Enriching 3 records with EPSS data
+2026-07-02 22:22:02 | INFO     | epss_fetcher | EPSS enrichment complete: 3 matched, 0 unmatched
+2026-07-02 22:22:02 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-02 22:22:02 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 22:22:02 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-02 22:54:13 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-02 22:54:15 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-02 22:54:15 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-02 22:54:15 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-03 01:14:00 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-03 01:14:05 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-03 01:14:05 | INFO     | epss_fetcher | Enriching 1631 records with EPSS data
+2026-07-03 01:14:05 | INFO     | epss_fetcher | EPSS enrichment complete: 1631 matched, 0 unmatched
+2026-07-03 01:38:28 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-03 01:38:30 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-03 01:38:30 | INFO     | epss_fetcher | Enriching 1631 records with EPSS data
+2026-07-03 01:38:30 | INFO     | epss_fetcher | EPSS enrichment complete: 1631 matched, 0 unmatched
+2026-07-03 02:26:37 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-03 02:26:42 | INFO     | epss_fetcher | Loaded EPSS scores for 345190 CVEs.
+2026-07-03 02:26:42 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
+2026-07-03 02:26:42 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched

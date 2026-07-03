@@ -1,267 +1,287 @@
 # VulnRadar — Project Description & Reference Guide
 
-VulnRadar is an advanced, asynchronous Python-based vulnerability intelligence service. It aggregates, enriches, and stores vulnerability data from multiple authoritative public sources to provide security teams with a unified view of threat intelligence.
+VulnRadar is an advanced asynchronous Python vulnerability intelligence service. It aggregates, enriches, and stores vulnerability data from multiple authoritative public sources to provide security teams with a unified view of threats.
 
 ---
 
 ## 📡 Threat Intelligence Data Sources
 
-VulnRadar pulls data from various endpoints to build a multi-layered profile of each vulnerability:
+VulnRadar pulls data from multiple sources to build rich vulnerability profiles:
 
-1. **CISA KEV (Known Exploited Vulnerabilities)**:
-   * **Purpose**: Serves as the starting catalog of vulnerabilities that are actively being exploited in the wild.
+1. **CISA KEV (Known Exploited Vulnerabilities)**
+   * **Purpose**: Primary source for actively exploited vulnerabilities.
    * **Source URL**: `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`
+   * **Usage**: The pipeline downloads the full KEV catalog and processes each entry as a candidate for enrichment.
 
-2. **EPSS (Exploit Prediction Scoring System)**:
-   * **Purpose**: Provides the probability (0.0 to 1.0) and percentile rankings representing the likelihood that a vulnerability will be exploited in the next 30 days.
-   * **Source URL**: `https://epss.cyentia.com/epss_scores-current.csv.gz` (maintained by Cyentia/FIRST.org).
+2. **EPSS (Exploit Prediction Scoring System)**
+   * **Purpose**: Provides exploit probability and percentile ranking for CVEs.
+   * **Source URL**: `https://epss.cyentia.com/epss_scores-current.csv.gz`
+   * **Usage**: The service downloads and decompresses the CSV in-memory, then enriches records with `epss_score` and `percentile`.
 
-3. **NVD (National Vulnerability Database)**:
-   * **Purpose**: Pulls detailed CVSS scores, severity, descriptions, weaknesses (CWE), CPE configurations, and references.
-   * **Source URL**: `https://services.nvd.nist.gov/rest/json/cves/2.0` (National Institute of Standards and Technology - NIST).
+3. **NVD (National Vulnerability Database)**
+   * **Purpose**: Supplies canonical CVE metadata including CVSS scores, descriptions, references, weaknesses, and configuration details.
+   * **Source URL**: `https://services.nvd.nist.gov/rest/json/cves/2.0`
+   * **Usage**: The pipeline queries NVD per CVE to merge detailed vulnerability information into the KEV payload.
 
-4. **Exploit Intelligence Sources**:
-   * **ExploitDB**: Direct search API (`https://www.exploit-db.com/search`) retrieving verified, public proof-of-concept exploits.
-   * **Metasploit Framework**: GitHub Code Search API (`https://api.github.com/search/code` in `rapid7/metasploit-framework`) to map vulnerabilities to active Metasploit integration modules.
-   * **PoC-in-GitHub**: Raw repository index by nomi-sec (`https://raw.githubusercontent.com/nomi-sec/PoC-in-GitHub/master`) mapping CVEs to active public repositories on GitHub.
+4. **Exploit Intelligence Sources**
+   * **ExploitDB**: Searches the public ExploitDB JSON endpoint for PoC exploits.
+   * **Metasploit Framework**: Uses GitHub Code Search against `rapid7/metasploit-framework` to identify active modules.
+   * **PoC-in-GitHub**: Reads the nomi-sec PoC index from GitHub raw content.
+   * **Usage**: These data sources create exploit reference evidence for each CVE.
+
+5. **GitHub Advisory**
+   * **Purpose**: Provides GitHub Security Advisory summaries, severity, and package context.
+   * **Usage**: Enrichment runs only when a valid `GITHUB_TOKEN` is configured.
+
+6. **OSV (Open Source Vulnerability Database)**
+   * **Purpose**: Supplements NVD data with OSV-specific summaries, references, and severities.
+   * **Usage**: Fetched from the OSV vulnerability endpoint for matching CVEs.
 
 ---
 
 ## 🏗️ Architecture & Component Layers
 
-VulnRadar follows a clean, layered architecture ensuring single responsibility, dependency injection, and robustness:
+VulnRadar uses a layered design that separates API delivery, fetcher orchestration, enrichment logic, persistence, and scheduling.
 
 ```mermaid
 graph TB
     subgraph Clients["🌐 Client Layer"]
-        WEB["Browser (Web Dashboards)"]
-        CLI["API Consumer (cURL / Postman)"]
+        WEB["Browser / Frontend"]
+        CLI["API Consumer / Scripts"]
     end
 
     subgraph API["🔌 API Layer (src/api/)"]
+        MW_AUTH["Auth Middleware"]
         MW_RATE["Rate Limiter Middleware"]
-        R_GATEWAY["GET / (Gateway Status)"]
+        R_ROOT["GET /"]
         R_HEALTH["GET /api/v1/health"]
         R_SYNC_DASH["GET /api/v1/pipeline/sync"]
-        R_SYNC_TRIG["POST /api/v1/pipeline/sync"]
-        R_STATUS["GET /api/v1/pipeline/status/:job_id"]
+        R_SYNC_START["POST /api/v1/pipeline/sync"]
+        R_SYNC_STATUS["GET /api/v1/pipeline/status/{job_id}"]
+        R_AUTH["Auth Routes"]
+        R_PROJECTS["Project Endpoints"]
     end
 
     subgraph Services["⚙️ Sync Engine (src/services/ & src/fetchers/)"]
-        PIPE["pipelines.py (Orchestrator)"]
-        ENRICH["enrichment.py (3-Stage Enricher)"]
-        F_KEV["kev_fetcher_async.py"]
-        F_EPSS["epss_fetcher_async.py"]
-        F_NVD["nvd_fetcher_async.py"]
-        F_EXP["exploit_fetcher_async.py"]
+        PIPE["src/fetchers/pipelines.py"]
+        ENRICH["src/services/enrichment.py"]
+        KEV["src/fetchers/kev_fetcher_async.py"]
+        EPSS["src/fetchers/epss_fetcher_async.py"]
+        NVD["src/fetchers/nvd_fetcher_async.py"]
+        EXP["src/fetchers/exploit_fetcher_async.py"]
+        GHA["src/fetchers/github_advisory_fetcher_async.py"]
+        OSV["src/fetchers/osv_fetcher_async.py"]
     end
 
-    subgraph Storage["🗃️ Storage Layer (src/models/ & src/services/Database/)"]
-        DB_STORE["DatabaseStorage"]
-        ORM_MODELS["SQLAlchemy Models"]
-        DB[(PostgreSQL - vulnradar schema)]
+    subgraph Storage["🗃️ Persistence Layer"]
+        DB_STORE["src/services/Database/storage.py"]
+        ORM["SQLAlchemy models"]
+        DB[(PostgreSQL `vulnradar` schema)]
     end
 
-    subgraph Jobs["⏰ Automation (src/jobs/)"]
-        SCHED["APScheduler (AsyncIOScheduler)"]
+    subgraph Jobs["⏰ Scheduler (src/jobs/)"]
+        SCHED["APScheduler background sync"]
     end
 
-    %% Routing
-    Clients --> MW_RATE
-    MW_RATE --> R_GATEWAY & R_HEALTH & R_SYNC_DASH & R_SYNC_TRIG & R_STATUS
-
-    %% Handlers -> Services & Jobs
-    R_SYNC_TRIG -.->|Launch Task| PIPE
-    R_STATUS -.->|Query Status| R_SYNC_TRIG
-    SCHED -->|Daily Trigger| PIPE
-
-    %% Pipeline Execution
-    PIPE --> F_KEV
+    Clients --> API
+    API --> MW_AUTH
+    API --> MW_RATE
+    API --> PIPE
+    API --> DB_STORE
     PIPE --> ENRICH
-    ENRICH --> F_EPSS & F_NVD & F_EXP
-    
-    %% Storage
+    ENRICH --> KEV
+    ENRICH --> EPSS
+    ENRICH --> NVD
+    ENRICH --> EXP
+    ENRICH --> GHA
+    ENRICH --> OSV
     PIPE --> DB_STORE
-    DB_STORE --> ORM_MODELS --> DB
+    DB_STORE --> ORM --> DB
+    SCHED --> PIPE
 ```
 
-### Directory Structure
+### Core components
+
+- `main.py`: starts the aiohttp web application, registers middleware, templates, and scheduler lifecycle hooks.
+- `src/config/config.py`: loads environment variables, validates JWT secret, and builds the database URL.
+- `src/config/database.py`: singleton SQLAlchemy connector with session factories and helper context managers.
+- `src/api/router.py`: registers all API routes for health, sync, auth, and projects.
+- `src/fetchers/pipelines.py`: orchestrates KEV fetching, enrichment, and persistence.
+- `src/services/enrichment.py`: coordinates EPSS, NVD, exploit, GitHub Advisory, and OSV enrichment.
+- `src/services/Database/storage.py`: persists enriched CVEs and child relations to PostgreSQL.
+- `src/jobs/scheduler.py`: schedules periodic background sync jobs and manages the scheduler lifecycle.
+
+---
+
+## 🗂️ Directory Structure
 
 ```text
 VulnRadar/
-├── main.py                        # Server startup & app factory configuration
-├── alembic.ini                    # Alembic database migration configuration
-├── requirements.txt               # Project dependency specifications
-├── migrations/                    # Alembic schema version history
-│
-└── src/
-    ├── api/                       # API HTTP delivery layer
-    │   ├── middleware/            # Request interceptors (e.g. rate limiter)
-    │   │   └── rate_limiter.py    # Token bucket rate limiting middleware
-    │   ├── v1/                    # API v1 routes & handlers
-    │   │   ├── health.py          # API connection and health/status handler
-    │   │   ├── pipeline.py        # Pipeline trigger and status monitoring
-    │   │   ├── auth.py            # Authentication routes and token handlers
-    │   │   └── projects.py        # User project management endpoints
-    │   └── router.py              # Central router registration
-    │
-    ├── config/                    # Global runtime settings
-    │   ├── config.py              # Environment settings parser
-    │   └── database.py            # SQLAlchemy engine & session factory
-    │
-    ├── fetchers/                  # Asynchronous data collectors
-    │   ├── epss_fetcher_async.py  # Cyentia/FIRST.org EPSS downloader
-    │   ├── exploit_fetcher_async.py # ExploitDB, Metasploit, and GitHub PoC search
-    │   ├── kev_fetcher_async.py   # CISA KEV fetcher
-    │   ├── nvd_fetcher_async.py   # NVD CVE details fetcher
-    │   └── pipelines.py           # Sync pipeline orchestrator
-    │
-    ├── jobs/                      # Automation & scheduling
-    │   └── scheduler.py           # APScheduler background sync manager
-    │
-    ├── models/                    # SQLAlchemy database schema models
-    │   ├── db_base.py             # Declares base metadata & schema namespace
-    │   ├── cve.py                 # Core vulnerability index table
-    │   ├── epss.py                # EPSS score mapping table
-    │   ├── exploit.py             # PoC exploit reference mapping table
-    │   ├── nvd.py                 # Normalized NVD tables (descriptions, CVSS, CPEs)
-    │   ├── weakness.py            # Weaknesses (CWE) relationships
-    │   ├── configuration.py       # Configuration nodes (CPE matching)
-    │   ├── users.py               # Authentication user model
-    │   └── sync_state.py          # Sync state tracking and historical run metadata
-    │
-    ├── services/                  # Business logic services
-    │   ├── Database/
-    │   │   └── storage.py         # Handles upserting bulk CVE payloads
-    │   ├── enrichment.py          # 3-Stage vulnerability enricher
-    │   ├── logger.py              # Rich console/file logging helper
-    │   └── security.py            # Password hashing and JWT utilities
-    │
-    ├── templates/                 # Jinja2 HTML templates
-    │   ├── gateway_status.html    # Connection / health room status UI
-    │   └── sync_dashboard.html    # Dynamic pipeline controller & monitor UI
-    └── api/                       # API HTTP delivery layer
+├── main.py
+├── alembic.ini
+├── requirements.txt
+├── pyproject.toml
+├── migrations/
+├── scripts/
+│   ├── insert_example_kev.py
+│   └── reset_and_refill_cve_db.py
+├── src/
+│   ├── api/
+│   │   ├── middleware/
+│   │   │   ├── auth.py
+│   │   │   └── rate_limiter.py
+│   │   ├── v1/
+│   │   │   ├── auth.py
+│   │   │   ├── health.py
+│   │   │   ├── pipeline.py
+│   │   │   ├── projects.py
+│   │   │   └── cve.py
+│   │   └── router.py
+│   ├── auth/
+│   │   ├── jwt.py
+│   │   └── users.py
+│   ├── config/
+│   │   ├── config.py
+│   │   └── database.py
+│   ├── fetchers/
+│   │   ├── epss_fetcher_async.py
+│   │   ├── exploit_fetcher_async.py
+│   │   ├── github_advisory_fetcher_async.py
+│   │   ├── kev_fetcher_async.py
+│   │   ├── nvd_fetcher_async.py
+│   │   ├── osv_fetcher_async.py
+│   │   └── pipelines.py
+│   ├── jobs/
+│   │   ├── scheduler.py
+│   │   └── tasks.py
+│   ├── models/
+│   │   ├── db_base.py
+│   │   ├── cve.py
+│   │   ├── cves.py
+│   │   ├── cve_details.py
+│   │   ├── cvss.py
+│   │   ├── cvss_models.py
+│   │   ├── epss.py
+│   │   ├── exploit.py
+│   │   ├── github_advisory.py
+│   │   ├── osv.py
+│   │   ├── projects.py
+│   │   ├── reference.py
+│   │   ├── sync_state.py
+│   │   ├── users.py
+│   │   ├── vendor_advisory.py
+│   │   └── weakness.py
+│   ├── services/
+│   │   ├── Database/
+│   │   │   └── storage.py
+│   │   ├── enrichment.py
+│   │   ├── logger.py
+│   │   ├── rate_limiter.py
+│   │   └── security.py
+│   └── templates/
+│       ├── gateway_status.html
+│       └── sync_dashboard.html
+└── frontend/                  # React/Vite frontend UI
 ```
 
 ---
 
-## 🌐 Frontend Experience
+## 🧩 Data Flow
 
-The web client lives in the frontend/ workspace and provides a modern, animated interface for the VulnRadar platform:
-
-- Built with React, TypeScript, and Vite.
-- The landing page offers session-aware navigation:
-  - Guests see a System Access button that routes them to authentication.
-  - Authenticated users see Profile/Dashboard and Disconnect actions directly from the landing page.
-- Protected routes such as `/dashboard` require an active session and redirect unauthenticated users to the auth flow.
-- The interface also includes theme switching and a polished landing experience for product presentation.
-
-## 🗄️ Database Schema & Normalization
-
-VulnRadar structures data in the `vulnradar` PostgreSQL schema. Below is a breakdown of the primary tables and relationships:
-
-```mermaid
-erDiagram
-    cves ||--|| epss : "has score"
-    cves ||--o{ exploit_references : "contains PoCs"
-    cves ||--o{ cve_descriptions : "contains descriptions"
-    cves ||--o{ cvss_metric_v2 : "has cvss v2"
-    cves ||--o{ cve_weaknesses : "associated weaknesses"
-    cves ||--o{ cve_configurations : "affects configurations"
-    cves ||--o{ cve_references : "linked references"
-
-    cves {
-        bigint id PK
-        string cve_id UK
-        string source_identifier
-        string title
-        text description
-        decimal cvss_v3_score
-        string severity
-        datetime published_date
-        datetime last_modified_date
-        string vuln_status
-        datetime created_at
-    }
-
-    epss {
-        bigint id PK
-        bigint cve_db_id FK
-        string cve_id
-        decimal epss_score
-        decimal percentile
-    }
-
-    exploit_references {
-        bigint id PK
-        bigint cve_db_id FK
-        string cve_id
-        string source
-        text url
-        string exploit_id
-        text title
-        string module
-    }
-```
+1. `src/fetchers/pipelines.py` starts by downloading the KEV catalog from CISA.
+2. The pipeline passes vulnerability records into `src/services/enrichment.py`.
+3. Enrichment may include:
+   * EPSS via `src/fetchers/epss_fetcher_async.py`
+   * NVD via `src/fetchers/nvd_fetcher_async.py`
+   * exploit intelligence via `src/fetchers/exploit_fetcher_async.py`
+   * GitHub Advisory via `src/fetchers/github_advisory_fetcher_async.py`
+   * OSV via `src/fetchers/osv_fetcher_async.py`
+4. The populated payloads are persisted using `src/services/Database/storage.py`.
+5. The database stores normalized child records for scores, references, weaknesses, configurations, and advisories.
 
 ---
 
-## ⚡ Synchronization Engine
+## 🧪 Key Implementation Details
 
-The sync engine operates either in **Background mode (Scheduler)** or **Manual mode (Dashboard)**:
+### Pipeline behavior
 
-1. **3-Stage Enrichment**:
-   * **Stage 1 (EPSS)**: Downloads the Cyentia gzipped CSV in-memory, parses it, and maps it directly via memory lookup.
-   * **Stage 2 (NVD)**: Queries the NIST REST API per-CVE to extract base scores, weaknesses, configurations, and reference URLs.
-   * **Stage 3 (Exploits)**: Queries ExploitDB, Metasploit, and PoC-in-GitHub concurrently using async enrichment.
+- `src/fetchers/pipelines.py` fetches KEVs and optionally filters by date range or incremental watermark.
+- It supports manual sync windows via `start_date` / `end_date` and defaults to incremental mode when no dates are provided.
+- Async progress callbacks update job state for the API dashboard.
+- `DatabaseStorage.save_enriched_cves()` commits all records and updates KEV watermark state.
 
-2. **Incremental Sync Logic**:
-   * When scheduled daily, the system queries the local database to find the latest `created_at` timestamp for stored CVEs.
-   * It then fetches the CISA KEV list and filters out any entries added before that watermark.
-   * Only new or updated KEV entries are processed and saved.
+### Enrichment logic
 
-3. **Background Scheduler (APScheduler)**:
-   * Initializes clean lifecycle hooks on server startup/shutdown.
-   * Runs daily in the background to execute incremental synchronization without server disruption.
+- `src/services/enrichment.py` performs enrichment stages in sequence.
+- EPSS enrichment is bulk and applies scores to every matching CVE.
+- NVD enrichment is per-CVE and includes a 6.5 second delay per request to avoid API rate limits.
+- Exploit enrichment aggregates data from ExploitDB, Metasploit, and PoC-in-GitHub.
+- GitHub Advisory enrichment requires `GITHUB_TOKEN` and adds advisory summary, severity, package, and references.
+- OSV enrichment adds OSV-specific summary, references, and severity tags.
 
-4. **Interactive Dashboard Progress**:
-   * Served at `GET /api/v1/pipeline/sync`.
-   * Displays the sync stage, records processed, and dynamic progress percentage in real time.
+### Persistence and ORM
 
----
+- `src/services/Database/storage.py` persists `Cve` rows and child entities.
+- It deletes old child records before writing fresh enriched data to ensure clean updates.
+- Parent CVE fields include title, description, score, severity, publish dates, and vulnerability status.
+- It saves relational child records for EPSS, exploit references, NVD CVSS metrics, weaknesses, configurations, OSV records, GitHub advisories, and vendor advisories.
 
-## 🔒 Authentication and API Security
+### Schema and migrations
 
-VulnRadar supports user-based authentication and protected API routes:
-
-- `POST /api/v1/auth/register` — register a new user.
-- `POST /api/v1/auth/login` — log in and receive a JWT.
-- `GET /api/v1/auth/me` — validate the token and return current user info.
-
-Authentication is enforced by `src/api/middleware/auth.py`, which allows public access only to the landing page, health endpoint, and auth endpoints.
-
----
-
-## 🔒 Security & Protection Middleware
-
-* **Token Bucket Rate Limiting**:
-  * An IP-based rate limiter middleware tracks incoming requests in memory.
-  * Defaults to `60 requests per minute`. Exceeding this triggers an automatic `429 Too Many Requests` response.
+- Alembic is configured through `alembic.ini` and `migrations/env.py`.
+- The DB schema is managed under `vulnradar`.
+- Relevant migrations include:
+  * moving tables into `vulnradar`
+  * adding OSV / GitHub / vendor advisory tables
+  * adding CVSS v4 sub-score columns
+  * dropping unused columns such as `exploit_references.module` if present
 
 ---
 
-## 📡 API Endpoints (v1)
+## 🔧 API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Root gateway status dashboard. Checks DB, NVD key, and GitHub token presence. |
-| `GET` | `/api/v1/health` | Raw connection, NVD API key presence, and GitHub token health. |
-| `GET` | `/api/v1/pipeline/sync` | HTML interface to trigger and monitor manual synchronizations. |
-| `POST` | `/api/v1/pipeline/sync` | Starts a background synchronization task. Expects JSON `start_date` / `end_date`. |
-| `GET` | `/api/v1/pipeline/status/{job_id}` | Polls current sync progress and final status. |
-| `POST` | `/api/v1/auth/register` | Create a new user account. |
-| `POST` | `/api/v1/auth/login` | Authenticate and receive a JWT. |
-| `GET` | `/api/v1/auth/me` | Validate current JWT and return user info. |
-| `POST` | `/api/v1/projects` | Create a user-scoped project. |
-| `GET` | `/api/v1/projects` | List projects for the authenticated user. |
-| `GET` | `/api/v1/projects/{id}` | Retrieve a single project for the authenticated user. |
+| `GET` | `/` | Gateway landing page with app status and health indicators |
+| `GET` | `/api/v1/health` | Health check for the database, NVD key, and GitHub token |
+| `GET` | `/api/health` | Alias of the health endpoint |
+| `GET` | `/api/v1/pipeline/sync` | Sync dashboard page |
+| `POST` | `/api/v1/pipeline/sync` | Start a background sync job. Optional body: `start_date`, `end_date` |
+| `GET` | `/api/v1/pipeline/status/{job_id}` | Poll background sync status and progress |
+| `POST` | `/api/v1/auth/register` | Register a new user and receive a JWT |
+| `POST` | `/api/v1/auth/login` | Authenticate and receive a JWT |
+| `GET` | `/api/v1/auth/me` | Validate JWT and return current user info |
+| `POST` | `/api/v1/projects/add` | Create a new project for the authenticated user |
+| `GET` | `/api/v1/projects` | List projects for the authenticated user |
+| `GET` | `/api/v1/projects/{id}` | Retrieve a specific project |
+| `POST` | `/api/v1/projects/{id}/items` | Add a CVE item to a project |
+| `GET` | `/api/v1/projects/{id}/items` | List items in a project |
+| `PATCH` | `/api/v1/projects/{id}/items/{cve_id}` | Update a project item |
+| `DELETE` | `/api/v1/projects/{id}/items/{cve_id}` | Remove a project item |
+| `PATCH` | `/api/v1/projects/{id}` | Update project metadata |
+| `DELETE` | `/api/v1/projects/{id}` | Delete a project |
+
+---
+
+## 💡 Operational Notes
+
+- `main.py` loads the aiohttp app and lifecycle context for scheduler startup/shutdown.
+- `src/api/middleware/auth.py` verifies JWT tokens and secures protected endpoints.
+- `src/api/middleware/rate_limiter.py` enforces rate limits at 60 requests per minute by default.
+- `src/config/config.py` validates the JWT secret and builds the DB URL from `.env`.
+- `scripts/reset_and_refill_cve_db.py` truncates CVE/enrichment tables and reruns the full sync pipeline.
+- `src/models/cvss_models.py` includes CVSS v4 sub-score columns for `cvss_data_v40`.
+- `src/services/Database/storage.py` persists `VendorAdvisory.vendor` and related advisory data.
+
+---
+
+## 🧠 Summary
+
+VulnRadar is designed as an extensible, async threat intelligence ingestion platform with:
+
+- KEV-first sync orchestration
+- EPSS, NVD, exploit, GitHub Advisory, and OSV enrichment
+- normalized PostgreSQL persistence under `vulnradar` schema
+- background sync dashboard and job tracking
+- JWT authentication and request rate limiting
+- easy extension for new data sources and enrichment stages

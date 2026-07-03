@@ -1,0 +1,6 @@
+2026-07-02 19:49:38 | WARNING  | osv_fetcher | OSV lookup failed for CVE-2026-45659: HTTP 400
+2026-07-02 19:49:38 | WARNING  | osv_fetcher | OSV lookup failed for CVE-2026-48558: HTTP 400
+2026-07-02 19:49:38 | WARNING  | osv_fetcher | OSV lookup failed for CVE-2026-12569: HTTP 400
+2026-07-02 22:22:25 | WARNING  | osv_fetcher | OSV lookup exception for CVE-2026-48558: Cannot connect to host osv.devcve-2026-48558:443 ssl:default [Name or service not known]
+2026-07-02 22:22:25 | WARNING  | osv_fetcher | OSV lookup exception for CVE-2026-12569: Cannot connect to host osv.devcve-2026-12569:443 ssl:default [Name or service not known]
+2026-07-02 22:22:25 | WARNING  | osv_fetcher | OSV lookup exception for CVE-2026-45659: Cannot connect to host osv.devcve-2026-45659:443 ssl:default [Name or service not known]

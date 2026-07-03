@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import asyncio
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator, Optional, List
 from urllib.parse import urlencode
 
 import aiohttp
 
 from src.config.config import Config
-from src.models.nvd import NvdApiResponse
+from src.models.nvd import NvdApiResponse, NvdVulnerability
 import src.services.logger as logger
 
 # Create module-level logger (singleton pattern)
@@ -29,14 +29,14 @@ def _build_headers() -> dict[str, str]:
 
 
 async def fetch_page(
-    session: aiohttp.ClientSession,
-    *,
-    keyword: Optional[str] = None,
-    cve_id: Optional[str] = None,
-    start_index: int = 0,
-    results_per_page: int = 200,
-    last_modified_start: Optional[str] = None,
-    last_modified_end: Optional[str] = None,
+        session: aiohttp.ClientSession,
+        *,
+        keyword: Optional[str] = None,
+        cve_id: Optional[str] = None,
+        start_index: int = 0,
+        results_per_page: int = 200,
+        last_modified_start: Optional[str] = None,
+        last_modified_end: Optional[str] = None,
 ) -> NvdApiResponse:
     """
     Fetch a single page of NVD CVEs.
@@ -88,7 +88,7 @@ async def fetch_page(
                     await asyncio.sleep(retry_delay)
                     retry_delay = min(retry_delay * 2, 60)  # Cap at 60 seconds
                     continue
-                
+
                 resp.raise_for_status()
                 payload = await resp.json()
                 _logger.info(f"Successfully fetched page at index {start_index}, got {len(payload.get('vulnerabilities', []))} CVEs")
@@ -115,13 +115,13 @@ async def fetch_page(
 
 
 async def iter_vulnerabilities(
-    session: aiohttp.ClientSession,
-    *,
-    keyword: Optional[str] = None,
-    max_results: int = 10_000,
-    results_per_page: int = 200,
-    last_modified_start: Optional[str] = None,
-    last_modified_end: Optional[str] = None,
+        session: aiohttp.ClientSession,
+        *,
+        keyword: Optional[str] = None,
+        max_results: int = 10_000,
+        results_per_page: int = 200,
+        last_modified_start: Optional[str] = None,
+        last_modified_end: Optional[str] = None,
 ) -> AsyncIterator[NvdApiResponse]:
     """
     Iterate over NVD pages for a given query.
@@ -193,31 +193,34 @@ async def iter_vulnerabilities(
 
 
 async def fetch_vulnerabilities_flat(
-    session: aiohttp.ClientSession,
-    *,
-    keyword: Optional[str] = None,
-    max_results: int = 1000,
-    results_per_page: int = 200,
-    last_modified_start: Optional[str] = None,
-    last_modified_end: Optional[str] = None,
-) -> list[dict]:
+        session: aiohttp.ClientSession,
+        *,
+        keyword: Optional[str] = None,
+        max_results: int = 1000,
+        results_per_page: int = 200,
+        last_modified_start: Optional[str] = None,
+        last_modified_end: Optional[str] = None,
+) -> List[NvdVulnerability]:
     """
     Convenience helper that flattens all pages into a single list of
-    vulnerability items (not NvdApiResponse objects).
+    NvdVulnerability objects (not NvdApiResponse objects).
 
     Returns the combined list of `vulnerabilities` entries.
+
+    FIX: Changed return type from list[dict] to List[NvdVulnerability]
+    to accurately reflect what the function returns.
     """
-    all_items: list[dict] = []
+    all_items: List[NvdVulnerability] = []
 
     _logger.info(f"Fetching all vulnerabilities flat: keyword={keyword}, max_results={max_results}, date_range={last_modified_start} to {last_modified_end}")
 
     async for page in iter_vulnerabilities(
-        session,
-        keyword=keyword,
-        max_results=max_results,
-        results_per_page=results_per_page,
-        last_modified_start=last_modified_start,
-        last_modified_end=last_modified_end,
+            session,
+            keyword=keyword,
+            max_results=max_results,
+            results_per_page=results_per_page,
+            last_modified_start=last_modified_start,
+            last_modified_end=last_modified_end,
     ):
         items = getattr(page, "vulnerabilities", []) or []
         all_items.extend(items)

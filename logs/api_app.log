@@ -1,0 +1,185 @@
+2026-06-29 20:04:00 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-29 20:04:00 | INFO     | api_app | Creating aiohttp web application
+2026-06-29 20:04:00 | INFO     | api_app | Registered all API route endpoints
+2026-06-29 20:04:00 | INFO     | api_app | Application created successfully
+2026-06-29 20:04:00 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-29 20:04:10 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-29 20:04:10 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-29 20:04:10 | INFO     | api_app | Creating aiohttp web application
+2026-06-29 20:04:10 | INFO     | api_app | Registered all API route endpoints
+2026-06-29 20:04:10 | INFO     | api_app | Application created successfully
+2026-06-29 20:04:10 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-29 21:35:10 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-29 21:35:10 | INFO     | api_app | Creating aiohttp web application
+2026-06-29 21:35:10 | INFO     | api_app | Registered all API route endpoints
+2026-06-29 21:35:10 | INFO     | api_app | Application created successfully
+2026-06-29 21:35:10 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-29 21:35:10 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 01:42:25 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 01:42:25 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 01:42:25 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 01:42:25 | INFO     | api_app | Application created successfully
+2026-06-30 01:42:25 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 01:49:05 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 01:50:49 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 01:50:49 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 01:50:49 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 01:50:49 | INFO     | api_app | Application created successfully
+2026-06-30 01:50:49 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 01:56:35 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 01:56:37 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 01:56:37 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 01:56:37 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 01:56:37 | INFO     | api_app | Application created successfully
+2026-06-30 01:56:37 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 01:59:18 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 01:59:20 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 01:59:20 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 01:59:20 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 01:59:20 | INFO     | api_app | Application created successfully
+2026-06-30 01:59:20 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 02:02:15 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 02:02:15 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 02:02:15 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 02:02:15 | INFO     | api_app | Application created successfully
+2026-06-30 02:02:15 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 02:02:15 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 02:02:23 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 02:02:23 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 02:02:23 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 02:02:23 | INFO     | api_app | Application created successfully
+2026-06-30 02:02:23 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 02:02:23 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 02:03:28 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 02:03:28 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 02:03:28 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 02:03:28 | INFO     | api_app | Application created successfully
+2026-06-30 02:03:28 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 02:04:35 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 02:04:37 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 02:04:37 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 02:04:37 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 02:04:37 | INFO     | api_app | Application created successfully
+2026-06-30 02:04:37 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 05:52:36 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 05:52:36 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 05:52:36 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 05:52:36 | INFO     | api_app | Application created successfully
+2026-06-30 05:52:36 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 05:52:36 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 06:55:46 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 06:55:46 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 06:55:46 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 06:55:46 | INFO     | api_app | Application created successfully
+2026-06-30 06:55:46 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 06:55:46 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 07:00:22 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 07:00:28 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 07:00:28 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 07:00:28 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 07:00:28 | INFO     | api_app | Application created successfully
+2026-06-30 07:00:28 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 07:02:13 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 07:03:37 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 07:03:37 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 07:03:37 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 07:03:37 | INFO     | api_app | Application created successfully
+2026-06-30 07:03:37 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 08:02:33 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 23:13:05 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 23:13:05 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 23:13:20 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 23:13:20 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 23:13:20 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 23:13:20 | INFO     | api_app | Application created successfully
+2026-06-30 23:13:20 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 23:19:40 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-06-30 23:19:41 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 23:19:41 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 23:22:40 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-06-30 23:22:40 | INFO     | api_app | Creating aiohttp web application
+2026-06-30 23:22:40 | INFO     | api_app | Registered all API route endpoints
+2026-06-30 23:22:40 | INFO     | api_app | Application created successfully
+2026-06-30 23:22:40 | INFO     | api_app | Initializing APScheduler background jobs
+2026-06-30 23:34:16 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-01 00:19:25 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-01 00:19:25 | INFO     | api_app | Creating aiohttp web application
+2026-07-01 00:19:25 | INFO     | api_app | Registered all API route endpoints
+2026-07-01 00:19:25 | INFO     | api_app | Application created successfully
+2026-07-01 00:19:25 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-01 19:58:05 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-01 19:58:05 | INFO     | api_app | Creating aiohttp web application
+2026-07-01 19:58:05 | INFO     | api_app | Registered all API route endpoints
+2026-07-01 19:58:05 | INFO     | api_app | Application created successfully
+2026-07-01 19:58:05 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-01 19:58:05 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-01 19:59:07 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-01 19:59:07 | INFO     | api_app | Creating aiohttp web application
+2026-07-01 19:59:07 | INFO     | api_app | Registered all API route endpoints
+2026-07-01 19:59:07 | INFO     | api_app | Application created successfully
+2026-07-01 19:59:07 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-01 20:30:44 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-01 20:30:45 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-01 20:30:45 | INFO     | api_app | Creating aiohttp web application
+2026-07-01 20:30:45 | INFO     | api_app | Registered all API route endpoints
+2026-07-01 20:30:45 | INFO     | api_app | Application created successfully
+2026-07-01 20:30:45 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-01 20:44:27 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-01 23:32:31 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-01 23:32:31 | INFO     | api_app | Creating aiohttp web application
+2026-07-01 23:32:31 | INFO     | api_app | Registered all API route endpoints
+2026-07-01 23:32:31 | INFO     | api_app | Application created successfully
+2026-07-01 23:32:31 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-01 23:42:15 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 00:44:16 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 00:44:16 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 00:44:16 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 00:44:16 | INFO     | api_app | Application created successfully
+2026-07-02 00:44:16 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 00:48:43 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 00:48:43 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 00:48:43 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 00:48:43 | INFO     | api_app | Application created successfully
+2026-07-02 00:48:43 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 00:48:43 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 01:15:37 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 01:15:37 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 01:15:37 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 01:15:37 | INFO     | api_app | Application created successfully
+2026-07-02 01:15:37 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 01:30:13 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 01:32:14 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 01:32:14 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 01:32:14 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 01:32:14 | INFO     | api_app | Application created successfully
+2026-07-02 01:32:14 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 01:50:25 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 20:31:22 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 20:31:22 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 20:31:22 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 20:31:22 | INFO     | api_app | Application created successfully
+2026-07-02 20:31:22 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 20:46:52 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 22:20:56 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 22:20:56 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 22:20:56 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 22:20:56 | INFO     | api_app | Application created successfully
+2026-07-02 22:20:56 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-02 22:54:11 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-02 22:54:12 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-02 22:54:12 | INFO     | api_app | Creating aiohttp web application
+2026-07-02 22:54:12 | INFO     | api_app | Registered all API route endpoints
+2026-07-02 22:54:12 | INFO     | api_app | Application created successfully
+2026-07-02 22:54:12 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-03 02:03:52 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-03 02:03:54 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-03 02:03:54 | INFO     | api_app | Creating aiohttp web application
+2026-07-03 02:03:54 | INFO     | api_app | Registered all API route endpoints
+2026-07-03 02:03:54 | INFO     | api_app | Application created successfully
+2026-07-03 02:03:54 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-03 02:26:35 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-03 02:26:37 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-03 02:26:37 | INFO     | api_app | Creating aiohttp web application
+2026-07-03 02:26:37 | INFO     | api_app | Registered all API route endpoints
+2026-07-03 02:26:37 | INFO     | api_app | Application created successfully
+2026-07-03 02:26:37 | INFO     | api_app | Initializing APScheduler background jobs

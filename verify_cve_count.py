@@ -1,15 +1,18 @@
 """Script to verify CVE count in vulnradar schema."""
 
-from src.config.database import SessionLocal
+from src.config.database import DatabaseConnector, init_db
 from src.models.cve import Cve
+def _get_db_session():
+    """Get database session, initializing if needed."""
+    connector = DatabaseConnector()
+    connector.init()
+    return connector.create_session()
 
 def verify_cve_count():
     """Query the database to count CVEs in the vulnradar schema."""
-    db = (SessionLocal)
-    if SessionLocal is None:
-        init_db()
+    db =_get_db_session()
     try:
-        count = db.query(Cve).count()
+        count = db.ex(Cve).count()
         print(f"Total CVEs in vulnradar.cves table: {count}")
         
         if count >= 30000:

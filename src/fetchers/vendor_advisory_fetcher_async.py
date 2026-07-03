@@ -33,6 +33,7 @@ async def fetch_vendor_advisory_for_cve(
         "vendor_advisory_available": False,
         "vendor_advisory_sources": [],
         "vendor_advisory_details": None,
+        "vendor_advisory_vendor": "unknown",
     }
 
 
@@ -70,10 +71,12 @@ def enrich_records_with_vendor_advisory(
             record.setdefault("vendor_advisory_available", False)
             record.setdefault("vendor_advisory_sources", [])
             record.setdefault("vendor_advisory_details", None)
+            record.setdefault("vendor_advisory_vendor", None)
             continue
 
         record["vendor_advisory_available"] = info.get("vendor_advisory_available", False)
         record["vendor_advisory_sources"] = info.get("vendor_advisory_sources", [])
         record["vendor_advisory_details"] = info.get("vendor_advisory_details")
+        record["vendor_advisory_vendor"] = info.get("vendor_advisory_vendor")
 
     return records

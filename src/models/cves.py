@@ -8,8 +8,9 @@ from src.models.reference import CveReference
 from src.models.weakness import CveWeakness, CveWeaknessDescription
 from src.models.users import User
 from src.models.projects import Project, ProjectItem
-
-cves = Cve
+from src.models.osv import OsvRecord, OsvReference
+from src.models.github_advisory import GithubAdvisory, GithubAdvisoryReference
+from src.models.vendor_advisory import VendorAdvisory
 
 __all__ = [
     "Base",
@@ -28,5 +29,9 @@ __all__ = [
     "User",
     "Project",
     "ProjectItem",
-    "cves",
+    "OsvRecord",
+    "OsvReference",
+    "GithubAdvisory",
+    "GithubAdvisoryReference",
+    "VendorAdvisory",
 ]

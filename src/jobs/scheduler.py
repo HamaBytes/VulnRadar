@@ -8,6 +8,8 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+import src.models.cves  # Ensure all ORM models are registered before scheduler queries
+
 from src.config.database import DatabaseConnector, init_db
 from src.fetchers.pipelines import run_enrichment_pipeline
 from src.services.Database.storage import DatabaseStorage
@@ -101,11 +103,14 @@ class SchedulerManager:
             
         except Exception as e:
             logger.error(f"Scheduled sync job failed: {e}", exc_info=True)
-            if sync_state:
-                sync_state.is_syncing = False
-                sync_state.status = "failed"
-                sync_state.error_message = str(e)
-                db.commit()
+            try:
+                if 'sync_state' in locals() and sync_state:
+                    sync_state.is_syncing = False
+                    sync_state.status = "failed"
+                    sync_state.error_message = str(e)
+                    db.commit()
+            except Exception:
+                logger.exception("Failed to update sync state after an error")
         finally:
             db.close()
 

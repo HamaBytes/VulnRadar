@@ -16,20 +16,26 @@ from src.models.sync_state import SyncState, SyncRun
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+# Sync type for KEV incremental watermark tracking
+KEV_SYNC_TYPE = "kev_enrichment"
+
 
 async def run_enrichment_pipeline(
-    limit: int | None = 10,
-    include_epss: bool = True,
-    include_nvd: bool = True,
-    include_exploits: bool = True,
-    include_osv: bool = True,
-    include_github_advisories: bool = True,
-    include_vendor_advisories: bool = True,
-    incremental: bool = True,
-    last_modified_watermark: Optional[datetime] = None,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
-    on_progress: Optional[Callable[[int, int, str], None]] = None,
+        limit: int | None = 10,
+        include_epss: bool = True,
+        include_nvd: bool = True,
+        include_exploits: bool = True,
+        include_osv: bool = True,
+        include_github_advisories: bool = True,
+        include_vendor_advisories: bool = True,
+        incremental: bool = True,
+        last_modified_watermark: Optional[datetime] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        on_progress: Optional[Callable[[int, int, str], None]] = None,
 ) -> list[dict[str, Any]]:
     """Orchestrates the fetching of KEV vulnerabilities and enriching them
     with NVD, EPSS, exploit-intelligence, OSV, GitHub Advisory, and vendor
@@ -42,10 +48,13 @@ async def run_enrichment_pipeline(
     :param include_osv: Whether to enrich with OSV metadata.
     :param include_github_advisories: Whether to enrich with GitHub Advisory metadata.
     :param include_vendor_advisories: Whether to enrich with vendor advisory metadata.
-    :param incremental: Whether to only process KEVs newer than the latest CVE in DB.
+    :param incremental: Whether to only process KEVs newer than the latest CISA dateAdded in DB.
+    :param last_modified_watermark: Optional explicit watermark for incremental sync.
+        If provided, this overrides the DB query and should be a CISA dateAdded date.
     :param start_date: Optional start date to manually filter CISA dateAdded.
     :param end_date: Optional end date to manually filter CISA dateAdded.
     :param on_progress: Optional callback on_progress(current, total, stage).
+    :returns: List of enriched KEV records.
     """
     connector = aiohttp.TCPConnector(family=socket.AF_INET, resolver=aiohttp.ThreadedResolver())
     async with aiohttp.ClientSession(connector=connector, trust_env=True) as session:
@@ -79,9 +88,19 @@ async def run_enrichment_pipeline(
                 init_db()
                 with db_session_ro() as db:
                     if max_date is None:
-                        max_date = db.query(func.max(Cve.last_modified_date)).scalar()
+                        # FIX: Query the SyncState table for the last KEV dateAdded watermark
+                        # instead of using Cve.last_modified_date (which is NVD data).
+                        sync_state = db.query(SyncState).filter(
+                            SyncState.sync_type == KEV_SYNC_TYPE
+                        ).first()
+                        if sync_state and sync_state.last_sync_date:
+                            max_date = sync_state.last_sync_date
+                            logger.info(f"Using KEV sync watermark from DB: {max_date}")
+                        else:
+                            logger.info("No KEV sync watermark found in DB; performing full fetch.")
             except Exception as e:
                 logger.warning(f"Could not retrieve last sync date for incremental sync: {e}. Performing full fetch.")
+
             if max_date:
                 logger.info(f"Performing incremental sync since: {max_date}")
                 max_date_only = max_date.date() if isinstance(max_date, datetime) else max_date
@@ -91,7 +110,8 @@ async def run_enrichment_pipeline(
                     if date_added_str:
                         try:
                             date_added = datetime.strptime(date_added_str, "%Y-%m-%d").date()
-                            if date_added > max_date_only:
+                            # Include entries where dateAdded >= max_date to catch same-day additions
+                            if date_added >= max_date_only:
                                 filtered_kevs.append(k)
                         except ValueError:
                             filtered_kevs.append(k)
@@ -105,7 +125,9 @@ async def run_enrichment_pipeline(
             kevs = kevs[:limit]
             logger.info("Limited to %d KEV entries for processing.", len(kevs))
 
-        # Step 2: Enrich with NVD + EPSS + Exploit data
+        # Step 2: Enrich with NVD + EPSS + Exploit + OSV + GitHub + Vendor data
+        # FIX: Pass through the include_osv, include_github_advisories, and
+        # include_vendor_advisories parameters instead of hardcoding them.
         enriched_kevs = await enrich_all_kevs(
             kevs,
             session,
@@ -113,26 +135,41 @@ async def run_enrichment_pipeline(
             include_epss=include_epss,
             include_nvd=include_nvd,
             include_exploits=include_exploits,
-            include_osv=True,
-            include_github_advisories=True,
-            include_vendor_advisories=True,
+            include_osv=include_osv,
+            include_github_advisories=include_github_advisories,
+            include_vendor_advisories=include_vendor_advisories,
             on_progress=on_progress,
         )
+
+        # Step 3: Save enriched records to database and update watermark
+        if enriched_kevs:
+            try:
+                from src.services.Database.storage import DatabaseStorage
+                db = DatabaseConnector().create_session()
+                try:
+                    storage = DatabaseStorage(db)
+                    saved_count = storage.save_enriched_cves(enriched_kevs, update_watermark=True)
+                    logger.info(f"Pipeline saved {saved_count} enriched KEV records to database")
+                finally:
+                    db.close()
+            except Exception as e:
+                logger.error(f"Failed to save enriched KEV records: {e}")
+                # Still return the enriched records even if save failed
 
         return enriched_kevs
 
 
 async def run_historical_import(
-    start_date: date,
-    end_date: Optional[date] = None,
-    chunk_days: int = 30,
-    include_epss: bool = True,
-    include_nvd: bool = True,
-    include_exploits: bool = True,
-    on_progress: Optional[Callable[[int, int, str], None]] = None,
+        start_date: date,
+        end_date: Optional[date] = None,
+        chunk_days: int = 30,
+        include_epss: bool = True,
+        include_nvd: bool = True,
+        include_exploits: bool = True,
+        on_progress: Optional[Callable[[int, int, str], None]] = None,
 ) -> dict[str, Any]:
     """Run historical NVD CVE import in 30-day chunks with resumable cursor.
-    
+
     :param start_date: Start date for historical import (e.g., date(2023, 1, 1))
     :param end_date: End date for historical import (defaults to today)
     :param chunk_days: Number of days per chunk (default 30)
@@ -144,7 +181,7 @@ async def run_historical_import(
     """
     if end_date is None:
         end_date = date.today()
-    
+
     init_db()
     db = DatabaseConnector().create_session()
     try:
@@ -157,34 +194,34 @@ async def run_historical_import(
             )
             db.add(sync_state)
             db.flush()
-        
+
         # Check if there's a pending run to resume from
         last_run = db.query(SyncRun).filter(
             SyncRun.sync_state_id == sync_state.id,
             SyncRun.status == "pending"
         ).order_by(SyncRun.start_date).first()
-        
+
         if last_run:
             logger.info(f"Resuming from pending run: {last_run.start_date} to {last_run.end_date}")
             current_start = last_run.start_date.date()
         else:
             current_start = start_date
-        
+
         # Calculate total chunks
         total_days = (end_date - start_date).days
         total_chunks = (total_days + chunk_days - 1) // chunk_days
-        
+
         logger.info(f"Starting historical import: {start_date} to {end_date} ({total_days} days, {total_chunks} chunks)")
-        
+
         total_cves = 0
         total_saved = 0
         chunk_count = 0
-        
+
         connector = aiohttp.TCPConnector(family=socket.AF_INET, resolver=aiohttp.ThreadedResolver())
         async with aiohttp.ClientSession(connector=connector, trust_env=True) as session:
             while current_start < end_date:
                 chunk_end = min(current_start + timedelta(days=chunk_days), end_date)
-                
+
                 # Check if this chunk was already completed
                 existing_run = db.query(SyncRun).filter(
                     SyncRun.sync_state_id == sync_state.id,
@@ -192,7 +229,7 @@ async def run_historical_import(
                     SyncRun.end_date == datetime.combine(chunk_end, datetime.min.time()),
                     SyncRun.status == "completed"
                 ).first()
-                
+
                 if existing_run:
                     logger.info(f"Skipping completed chunk: {current_start} to {chunk_end}")
                     total_cves += existing_run.records_processed or 0
@@ -202,7 +239,7 @@ async def run_historical_import(
                     if on_progress:
                         on_progress(chunk_count, total_chunks, f"Skipping completed chunk {chunk_count}/{total_chunks}")
                     continue
-                
+
                 # Create sync run for this chunk
                 sync_run = SyncRun(
                     sync_state_id=sync_state.id,
@@ -214,15 +251,15 @@ async def run_historical_import(
                 )
                 db.add(sync_run)
                 db.flush()
-                
+
                 logger.info(f"Processing chunk {chunk_count + 1}/{total_chunks}: {current_start} to {chunk_end}")
                 if on_progress:
                     on_progress(chunk_count + 1, total_chunks, f"Fetching NVD data for {current_start} to {chunk_end}")
-                
+
                 # Format dates for NVD API (ISO 8601)
                 last_modified_start = current_start.strftime("%Y-%m-%dT00:00:00.000")
                 last_modified_end = chunk_end.strftime("%Y-%m-%dT23:59:59.999")
-                
+
                 try:
                     # Fetch NVD vulnerabilities for this date range
                     nvd_data = await fetch_vulnerabilities_flat(
@@ -231,25 +268,25 @@ async def run_historical_import(
                         last_modified_start=last_modified_start,
                         last_modified_end=last_modified_end,
                     )
-                    
+
                     logger.info(f"Fetched {len(nvd_data)} NVD CVEs for chunk {current_start} to {chunk_end}")
                     sync_run.records_processed = len(nvd_data)
-                    
+
                     # Convert NVD data to enriched format
                     enriched_records = []
                     for nvd_item in nvd_data:
                         # nvd_item is an NvdVulnerability object with a cve attribute
                         cve = nvd_item.cve
                         cve_id = cve.cve_id
-                        
+
                         if not cve_id:
                             continue
-                        
+
                         # Get description
                         description = ""
                         if cve.descriptions:
                             description = cve.descriptions[0].value
-                        
+
                         # Create basic enriched record structure
                         enriched_record = {
                             "cveID": cve_id,
@@ -260,21 +297,21 @@ async def run_historical_import(
                             "nvd_cve_obj": cve,  # Pass the full NvdCve object
                         }
                         enriched_records.append(enriched_record)
-                    
+
                     # Save to database
                     from src.services.Database.storage import DatabaseStorage
                     storage = DatabaseStorage(db)
-                    saved_count = storage.save_enriched_cves(enriched_records)
-                    
+                    saved_count = storage.save_enriched_cves(enriched_records, update_watermark=False)
+
                     sync_run.records_saved = saved_count
                     sync_run.status = "completed"
                     sync_run.completed_at = datetime.utcnow()
-                    
+
                     total_cves += len(nvd_data)
                     total_saved += saved_count
-                    
+
                     logger.info(f"Chunk complete: {current_start} to {chunk_end}, fetched {len(nvd_data)}, saved {saved_count}")
-                    
+
                 except Exception as e:
                     logger.error(f"Failed to process chunk {current_start} to {chunk_end}: {e}")
                     sync_run.status = "failed"
@@ -282,21 +319,21 @@ async def run_historical_import(
                     sync_run.completed_at = datetime.utcnow()
                     db.commit()
                     raise
-                
+
                 finally:
                     db.commit()
-                
+
                 current_start = chunk_end
                 chunk_count += 1
-        
+
         # Update sync state
         sync_state.last_sync_date = datetime.utcnow()
         sync_state.status = "completed"
         sync_state.is_syncing = False
         db.commit()
-        
+
         logger.info(f"Historical import complete: {total_cves} CVEs fetched, {total_saved} saved")
-        
+
         return {
             "total_cves_fetched": total_cves,
             "total_cves_saved": total_saved,
@@ -304,6 +341,6 @@ async def run_historical_import(
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
         }
-        
+
     finally:
         db.close()

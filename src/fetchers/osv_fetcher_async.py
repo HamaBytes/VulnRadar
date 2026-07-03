@@ -11,19 +11,25 @@ from src.config.config import Config
 import src.services.logger as logger
 
 _LOG = logger.Logger("osv_fetcher", level="INFO", log_file="logs/osv_fetcher.log")
-OSV_API_URL = "https://api.osv.dev/v1/query"
+OSV_API_BASE = "https://api.osv.dev/v1"
+OSV_API_URL = f"{OSV_API_BASE}/query"
 
 
 async def fetch_osv_for_cve(session: aiohttp.ClientSession, cve_id: str) -> dict[str, Any]:
-    """Fetch OSV vulnerability metadata for a single CVE."""
-    payload = {"id": cve_id}
+    """Fetch OSV vulnerability metadata for a single CVE using the correct GET endpoint."""
+    # Use the dedicated OSV GET vuln endpoint: /v1/vulns/{id}
+    vuln_url = f"{OSV_API_BASE}/vulns/{cve_id.upper()}"
+
     headers = {
-        "Content-Type": "application/json",
         "User-Agent": getattr(Config, "NVD_USER_AGENT", "VulnRadar/1.0"),
     }
 
     try:
-        async with session.post(OSV_API_URL, json=payload, headers=headers, timeout=30) as resp:
+        # Change method from POST to GET
+        async with session.get(vuln_url, headers=headers, timeout=30) as resp:
+            if resp.status == 404:
+                _LOG.info(f"CVE {cve_id} not found in OSV database.")
+                return {}
             if resp.status != 200:
                 _LOG.warning(f"OSV lookup failed for {cve_id}: HTTP {resp.status}")
                 return {}
