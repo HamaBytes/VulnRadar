@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from src.api.middleware.auth import require_auth
 from src.config.database import db_session_ro
-from src.models.cve import Cve
+import src.models
 routes = web.RouteTableDef()
 @routes.get("/api/v1/cve/list")
 @routes.get("/api/v1/cves")
@@ -27,7 +27,7 @@ async def get_cve(request):
     """Return one CVE."""
     with db_session_ro() as db:
         result = db.execute(
-            select(Cve)
+            select(Cve , cpe_marches , cve_configuera, cve_description , cve_node , cve_refrenceces , cve_)
             .where(Cve.cve_id == request.match_info["cve_id"])
             .order_by(Cve.created_at.desc())
             .limit(1)

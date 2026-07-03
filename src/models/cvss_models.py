@@ -70,8 +70,8 @@ class CvssDataV40(Base):
     vuln_confidentiality_impact = Column(String(50))
     vuln_integrity_impact = Column(String(50))
     vuln_availability_impact = Column(String(50))
-    sub_confidentiality_impact = Column(Float, nullable=True)
-    sub_integrity_impact = Column(Float, nullable=True)
-    sub_availability_impact = Column(Float, nullable=True)
+    sub_confidentiality_impact = Column(String(50), nullable=True)
+    sub_integrity_impact = Column(String(50), nullable=True)
+    sub_availability_impact = Column(String(50), nullable=True)
 
     metric = relationship("CvssMetricV40", back_populates="cvss_data")

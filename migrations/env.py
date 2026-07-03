@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import pool
 
 from alembic import context
+import src.models  
 from src.models.cves import Base
 from src.config.config import Config
 

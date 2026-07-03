@@ -1,3 +1,4 @@
+
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -6,7 +7,6 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
 from src.config.database import init_db, db_session
 from src.services.Database.storage import DatabaseStorage
 import uuid
@@ -86,5 +86,4 @@ example["nvd_cve_obj"] = nvd_obj
 with db_session() as db:
     storage = DatabaseStorage(db)
     cve = storage.save_enriched_cve(example)
-    # commit happens in db_session context
     print("Inserted CVE:", cve.cve_id, "id=", cve.id)

@@ -16,3 +16,10 @@ from src.models.cve_details import CveDescription, CveTag
 from src.models.users import User
 from src.models.projects import Project, ProjectItem
 from src.models.sync_state import SyncState, SyncRun
+from src.models.epss import Epss
+from src.models.github_advisory import GithubAdvisory, GithubAdvisoryReference
+from src.models.osv import OsvRecord, OsvReference
+from src.models.vendor_advisory import VendorAdvisory
+from src.models.cvss_models import (
+    CvssMetricV31, CvssDataV31, CvssMetricV40, CvssDataV40,
+)

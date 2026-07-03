@@ -31,9 +31,9 @@ async def main():
             start_date=start_date,
             end_date=end_date,
             chunk_days=30,
-            include_epss=False,  # Disable EPSS for faster historical import
+            include_epss=True,  # Disable EPSS for faster historical import
             include_nvd=True,
-            include_exploits=False,  # Disable exploits for faster historical import
+            include_exploits=True,  # Disable exploits for faster historical import
             on_progress=progress_callback,
         )
         
