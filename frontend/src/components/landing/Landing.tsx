@@ -29,6 +29,19 @@ import {
     LogOut,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+
+const TERMINAL_LINES = [
+    '$ vuln-radar --init-sequence',
+    '[INFO] System kernel established...',
+    '[INFO] Syncing with KEV catalog...',
+    '[OK] CISA KEV Sync Complete (1,104 targets)',
+    '[ANALYZING] CVE-2026-XXXX (UNASSIGNED)',
+    'Heuristic Score: 9.8 CRITICAL',
+    'Exploit Telemetry: POC Detected on GitHub',
+    '$ monitoring traffic...',
+    '_ SYSTEM READY',
+];
+
 // ─── Animated Counter ─────────────────────────────────────────────
 function AnimatedCounter({ end, suffix = '', duration = 2 }: { end: number; suffix?: string; duration?: number }) {
     const [count, setCount] = useState(0);
@@ -87,26 +100,15 @@ function GlitchText({ text, className = '' }: { text: string; className?: string
 // ─── Terminal Mockup ──────────────────────────────────────────────
 function TerminalMockup() {
     const [lines, setLines] = useState<string[]>([]);
-    const fullLines = [
-        '$ vuln-radar --init-sequence',
-        '[INFO] System kernel established...',
-        '[INFO] Syncing with KEV catalog...',
-        '[OK] CISA KEV Sync Complete (1,104 targets)',
-        '[ANALYZING] CVE-2026-XXXX (UNASSIGNED)',
-        'Heuristic Score: 9.8 CRITICAL',
-        'Exploit Telemetry: POC Detected on GitHub',
-        '$ monitoring traffic...',
-        '_ SYSTEM READY'
-    ];
 
     useEffect(() => {
         let i = 0;
         const interval = setInterval(() => {
-            if (i >= fullLines.length) {
+            if (i >= TERMINAL_LINES.length) {
                 clearInterval(interval);
                 return;
             }
-            setLines(prev => [...prev, fullLines[i]]);
+            setLines(prev => [...prev, TERMINAL_LINES[i]]);
             i++;
         }, 400);
         return () => clearInterval(interval);

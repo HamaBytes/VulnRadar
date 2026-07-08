@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import type { Project, ProjectItem, CreateProjectItemPayload, UpdateProjectItemPayload } from '../types/projects.types.ts';
 import { addProjectItem, deleteProjectItem, getProject, listProjectItems, updateProjectItem } from '../api/Projects.ts';
 import { ProjectItemTable } from '../components/projects/ProjectItemTable.tsx';
@@ -8,6 +9,8 @@ import { ProjectItemForm } from '../components/projects/ProjectItemForm.tsx';
 export function ProjectDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const projectId = Number(id);
+    const hasValidProjectId = Boolean(id) && !Number.isNaN(projectId);
     const [project, setProject] = useState<Project | null>(null);
     const [items, setItems] = useState<ProjectItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -17,8 +20,8 @@ export function ProjectDetailPage() {
 
     useEffect(() => {
         const load = async () => {
-            if (!id) {
-                setError('Project ID is missing');
+            if (!hasValidProjectId) {
+                setError('Invalid project ID');
                 setLoading(false);
                 return;
             }
@@ -27,7 +30,6 @@ export function ProjectDetailPage() {
             setError(null);
 
             try {
-                const projectId = Number(id);
                 const [projectResponse, itemResponse] = await Promise.all([
                     getProject(projectId),
                     listProjectItems(projectId),
@@ -42,26 +44,17 @@ export function ProjectDetailPage() {
         };
 
         load();
-    }, [id]);
+    }, [hasValidProjectId, projectId]);
 
-    const refreshItems = async () => {
-        if (!id) return;
-        try {
-            const projectId = Number(id);
-            const itemResponse = await listProjectItems(projectId);
-            setItems(itemResponse);
-        } catch (err: any) {
-            setError(err.response?.data?.error || 'Unable to refresh items.');
-        }
-    };
+    if (!hasValidProjectId) {
+        return <div className="text-error">Invalid project ID</div>;
+    }
 
     const handleAddItem = async (data: CreateProjectItemPayload) => {
-        if (!id) return;
         setSubmitting(true);
         setError(null);
 
         try {
-            const projectId = Number(id);
             const newItem = await addProjectItem(projectId, data);
             setItems((current) => [newItem, ...current]);
             setEditItem(null);
@@ -73,12 +66,10 @@ export function ProjectDetailPage() {
     };
 
     const handleDeleteItem = async (item: ProjectItem) => {
-        if (!id) return;
         setSubmitting(true);
         setError(null);
 
         try {
-            const projectId = Number(id);
             await deleteProjectItem(projectId, item.cve_id);
             setItems((current) => current.filter((existing) => existing.id !== item.id));
         } catch (err: any) {
@@ -93,12 +84,11 @@ export function ProjectDetailPage() {
     };
 
     const handleUpdateItem = async (data: UpdateProjectItemPayload) => {
-        if (!id || !editItem) return;
+        if (!editItem) return;
         setSubmitting(true);
         setError(null);
 
         try {
-            const projectId = Number(id);
             const updatedItem = await updateProjectItem(projectId, editItem.cve_id, data);
             setItems((current) => current.map((existing) => (existing.id === updatedItem.id ? updatedItem : existing)));
             setEditItem(null);
@@ -110,19 +100,18 @@ export function ProjectDetailPage() {
     };
 
     return (
-        <div className="font-body-md min-h-screen bg-background text-on-background">
-            <div className="max-w-max-width mx-auto px-margin-desktop py-8">
+        <div className="max-w-max-width mx-auto w-full">
                 <button
                     type="button"
                     onClick={() => navigate('/projects')}
                     className="mb-6 inline-flex items-center gap-2 text-primary font-label-bold text-label-bold"
                 >
-                    <span className="material-symbols-outlined">arrow_back</span>
+                    <ArrowLeft size={16} />
                     Back to Projects
                 </button>
 
                 {loading && <div className="text-on-surface-variant">Loading project...</div>}
-                {error && <div className="rounded-md border border-error/20 bg-error-container px-4 py-3 text-error">{error}</div>}
+                {error && <div className="rounded-none border border-error/20 bg-error-container px-4 py-3 text-error">{error}</div>}
 
                 {project && (
                     <div className="glass-panel p-6 mb-6">
@@ -146,7 +135,7 @@ export function ProjectDetailPage() {
                             <button
                                 type="button"
                                 onClick={() => setEditItem(null)}
-                                className="rounded-md border border-outline-variant px-4 py-2 text-outline hover:border-primary/50 hover:text-on-surface transition-all"
+                                className="rounded-none border border-outline-variant px-4 py-2 text-outline hover:border-primary/50 hover:text-on-surface transition-all"
                             >
                                 Cancel edit
                             </button>
@@ -154,13 +143,13 @@ export function ProjectDetailPage() {
                     </div>
 
                     <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-                        <div className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                        <div className="rounded-none border border-outline-variant/30 bg-surface-container-lowest p-5">
                             <h3 className="font-label-bold text-label-bold text-on-surface mb-4">{editItem ? 'Edit tracked CVE' : 'Add tracked CVE'}</h3>
                             <ProjectItemForm
                                 initialData={editItem ?? undefined}
                                 onSubmit={async (payload) => {
                                     if (editItem) {
-                                        const { cve_id, ...updatePayload } = payload;
+                                        const { cve_id: _cveId, ...updatePayload } = payload;
                                         await handleUpdateItem(updatePayload);
                                     } else {
                                         await handleAddItem(payload);
@@ -171,12 +160,11 @@ export function ProjectDetailPage() {
                             />
                         </div>
 
-                        <div className="rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-5">
+                        <div className="rounded-none border border-outline-variant/30 bg-surface-container-lowest p-5">
                             <ProjectItemTable items={items} onEdit={handleEditItem} onDelete={handleDeleteItem} />
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
     );
 }

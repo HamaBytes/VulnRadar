@@ -1,33 +1,16 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { register as registerApi } from '../../api/auth';
 import { useAuthStore } from '../../stores/authStore';
 import { Lock, Mail, Terminal, Shield, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { RegisterSchema, type RegisterInput } from './authSchemas';
+
 interface RegisterFormProps {
     onToggle: () => void;
 }
-export const RegisterSchema = z.object({
-    email: z
-        .string()
-        .min(1, 'Email is required')
-        .email('Please enter a valid email address'),
-    password: z
-        .string()
-        .min(1, 'Password is required')
-        .min(8, 'Password must be at least 8 characters long'),
-    confirmPassword: z
-        .string()
-        .min(1, 'Confirm password is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Security ciphers do not match",
-    path: ["confirmPassword"],
-});
-
-export type RegisterInput = z.infer<typeof RegisterSchema>;
 
 export function RegisterForm({ onToggle }: RegisterFormProps ) {
     const navigate = useNavigate();
@@ -45,7 +28,7 @@ export function RegisterForm({ onToggle }: RegisterFormProps ) {
     const onSubmit = async (data: RegisterInput) => {
         setServerError(null);
         try {
-            const { confirmPassword, ...apiData } = data;
+            const { confirmPassword: _confirmPassword, ...apiData } = data;
             const response = await registerApi(apiData);
             authLogin(response.token, response.user);
             navigate('/dashboard');
@@ -184,9 +167,8 @@ export function RegisterForm({ onToggle }: RegisterFormProps ) {
                             <motion.button
                                 type="button"
                                 onClick={onToggle}
-                                className="font-code-sm text-code-sm transition-colors"
+                                className="font-code-sm text-code-sm text-primary transition-colors"
                                 whileHover={{ scale: 1.05 }}
-                                style={{ color: '#adc6ff' }}
                             >
                                 Authenticate Existing Credentials
                             </motion.button>
@@ -197,7 +179,7 @@ export function RegisterForm({ onToggle }: RegisterFormProps ) {
                 {/* Technical Metadata */}
                 <div className="pt-6 border-t border-outline-variant/20 flex flex-wrap gap-x-6 gap-y-2">
                     <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        <span className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse"></span>
                         <span className="font-code-sm text-code-sm text-outline">NODE: VR-DELTA-9</span>
                     </div>
                     <div className="flex items-center gap-2">

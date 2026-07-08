@@ -30,14 +30,14 @@ export function ProjectItemTable({ items, onEdit, onDelete }: ProjectItemTablePr
                                 <button
                                     type="button"
                                     onClick={() => onEdit(item)}
-                                    className="rounded-md border border-outline-variant px-3 py-2 font-label-bold text-label-bold text-on-surface hover:border-primary/50 transition-all"
+                                    className="rounded-none border border-outline-variant px-3 py-2 font-label-bold text-label-bold text-on-surface hover:border-primary/50 transition-all"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => onDelete(item)}
-                                    className="rounded-md border border-error/20 bg-error/10 px-3 py-2 font-label-bold text-label-bold text-error hover:bg-error/20 transition-all"
+                                    className="rounded-none border border-error/20 bg-error/10 px-3 py-2 font-label-bold text-label-bold text-error hover:bg-error/20 transition-all"
                                 >
                                     Delete
                                 </button>

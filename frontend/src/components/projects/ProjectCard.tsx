@@ -9,6 +9,14 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
     const navigate = useNavigate();
 
+    const handleDelete = () => {
+        if (!confirm(`Delete project "${project.name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        onDelete(project.id);
+    };
+
     return (
         <div className="glass-panel p-6 border border-outline-variant hover:border-primary/50 transition-all">
             <div className="flex items-start justify-between gap-4">
@@ -17,7 +25,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
                     <p className="font-code-sm text-code-sm text-on-surface-variant mt-2">{project.description || 'No description available.'}</p>
                 </div>
                 <button
-                    onClick={() => onDelete(project.id)}
+                    onClick={handleDelete}
                     className="text-error font-label-bold text-label-bold uppercase tracking-[0.2em] hover:text-error/80 transition-colors"
                 >
                     Delete
@@ -30,7 +38,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
             <div className="mt-6 flex items-center gap-3">
                 <button
                     onClick={() => navigate(`/projects/${project.id}`)}
-                    className="rounded-full bg-primary/10 px-4 py-2 text-primary font-label-bold text-label-bold hover:bg-primary/20 transition-all"
+                    className="rounded-none bg-primary/10 px-4 py-2 text-primary font-label-bold text-label-bold hover:bg-primary/20 transition-all"
                 >
                     View details
                 </button>

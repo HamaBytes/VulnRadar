@@ -1,26 +1,16 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../api/auth';
 import { useAuthStore } from '../../stores/authStore';
 import { motion } from 'framer-motion';
-import { Lock, Mail } from 'lucide-react';
-export const LoginPageSchema = z.object({
-    email: z
-        .string()
-        .min(1, 'Email is required')
-        .email('Please enter a valid email address'),
-    password: z
-        .string()
-        .min(1, 'Password is required')
-        .min(8, 'Password must be at least 8 characters long'),
-});
+import { Lock, Mail, Terminal } from 'lucide-react';
+import { LoginPageSchema, type LoginInput } from './authSchemas';
+
 interface LoginFormProps {
     onToggle: () => void;
 }
-export type LoginInput = z.infer<typeof LoginPageSchema>;
 
 export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = useNavigate();
     const authLogin = useAuthStore((state) => state.login);
@@ -55,7 +45,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
                 {/* Branding */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-4">
-                        <span className="material-symbols-outlined text-primary text-xl">terminal</span>
+                        <Terminal size={20} className="text-primary" />
                         <span className="font-headline-md text-headline-md tracking-tighter text-primary drop-shadow-[0_0_8px_rgba(173,198,255,0.4)]">
                             VULNRADAR
                         </span>
@@ -133,7 +123,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full rounded-xl bg-primary px-6 py-4 text-on-primary font-label-bold text-label-bold uppercase tracking-[0.2em] transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full rounded-none bg-primary px-6 py-4 text-on-primary font-label-bold text-label-bold uppercase tracking-[0.2em] transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'AUTHENTICATING...' : 'INITIATE SESSION'}
                     </button>
@@ -143,9 +133,8 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
                         <motion.button
                             type="button"
                             onClick={onToggle}
-                            className="font-code-sm text-code-sm transition-colors"
+                            className="font-code-sm text-code-sm text-secondary transition-colors"
                             whileHover={{ scale: 1.05 }}
-                            style={{ color: '#5de6ff' }}
                         >
                             Initialize New Operator Account
                         </motion.button>
@@ -155,7 +144,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
                 {/* Technical Metadata */}
                 <div className="pt-6 border-t border-outline-variant/20 flex flex-wrap gap-x-6 gap-y-2">
                     <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"></span>
+                        <span className="w-1.5 h-1.5 rounded-none bg-secondary-fixed animate-pulse"></span>
                         <span className="font-code-sm text-code-sm text-outline">NODE: VR-DELTA-9</span>
                     </div>
                     <div className="flex items-center gap-2">

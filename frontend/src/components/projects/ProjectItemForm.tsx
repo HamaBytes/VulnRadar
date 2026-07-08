@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import type { CreateProjectItemPayload } from '../../types/projects.types.ts';
+import { CVE_REGEX, PROJECT_STATUSES } from '../../constants/cve';
 
 interface ProjectItemFormProps {
     initialData?: Partial<CreateProjectItemPayload>;
@@ -14,8 +15,7 @@ export function ProjectItemForm({
     onSubmit,
     submitting,
     submitLabel = 'ADD TRACKED CVE',
-    isEditing = false,
-}: ProjectItemFormProps) {
+                                }: ProjectItemFormProps) {
     const [assetName, setAssetName] = useState(initialData.asset_name ?? '');
     const [cveId, setCveId] = useState(initialData.cve_id ?? '');
     const [ip, setIp] = useState(initialData.ip ?? '');
@@ -38,6 +38,12 @@ export function ProjectItemForm({
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (!CVE_REGEX.test(cveId)) {
+            alert('Invalid CVE ID format. Expected: CVE-YYYY-NNNN+');
+            return;
+        }
+
         onSubmit({
             asset_name: assetName.trim(),
             cve_id: cveId.trim(),
@@ -131,10 +137,11 @@ export function ProjectItemForm({
                         onChange={(event) => setStatus(event.target.value)}
                         className="tactical-input w-full p-2 font-code-sm text-code-sm text-on-surface"
                     >
-                        <option value="analysis">analysis</option>
-                        <option value="mitigation_planned">mitigation_planned</option>
-                        <option value="remediating">remediating</option>
-                        <option value="risk_accepted">risk_accepted</option>
+                        {PROJECT_STATUSES.map((projectStatus) => (
+                            <option key={projectStatus} value={projectStatus}>
+                                {projectStatus}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div>

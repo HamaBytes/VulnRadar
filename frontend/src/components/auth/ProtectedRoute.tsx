@@ -8,6 +8,11 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isLoading = useAuthStore((state) => state.isLoading);
+
+    if (isLoading) {
+        return <div className="text-terminal-green">Initializing...</div>;
+    }
 
     // Not logged in → kick to login
     if (!isAuthenticated) {
