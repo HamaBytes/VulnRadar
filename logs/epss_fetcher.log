@@ -66,3 +66,7 @@
 2026-07-03 21:18:37 | INFO     | epss_fetcher | Loaded EPSS scores for 345378 CVEs.
 2026-07-03 21:18:37 | INFO     | epss_fetcher | Enriching 765 records with EPSS data
 2026-07-03 21:18:37 | INFO     | epss_fetcher | EPSS enrichment complete: 765 matched, 0 unmatched
+2026-07-08 06:21:15 | INFO     | epss_fetcher | Downloading EPSS scores from https://epss.cyentia.com/epss_scores-current.csv.gz ...
+2026-07-08 06:21:19 | INFO     | epss_fetcher | Loaded EPSS scores for 345995 CVEs.
+2026-07-08 06:21:19 | INFO     | epss_fetcher | Enriching 4 records with EPSS data
+2026-07-08 06:21:19 | INFO     | epss_fetcher | EPSS enrichment complete: 4 matched, 0 unmatched

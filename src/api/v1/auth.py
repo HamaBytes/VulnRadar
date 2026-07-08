@@ -94,7 +94,7 @@ async def register_user(request):
             db.refresh(new_user)
 
             token = create_jwt_token(new_user.id, new_user.email)
-
+            print(token)
             logger.info(f"[{request_id}] User registered successfully: id={new_user.id}, email={email}")
             return web.json_response({
                 "token": token,

@@ -12195,3 +12195,15 @@
 2026-07-03 23:49:52 | DEBUG    | nvd_fetch | Fetching NVD page: startIndex=0, resultsPerPage=200
 2026-07-03 23:49:52 | DEBUG    | nvd_fetch | Specific CVE: CVE-2023-21674
 2026-07-03 23:49:52 | INFO     | nvd_fetch | Successfully fetched page at index 0, got 1 CVEs
+2026-07-08 06:21:26 | DEBUG    | nvd_fetch | Fetching NVD page: startIndex=0, resultsPerPage=200
+2026-07-08 06:21:26 | DEBUG    | nvd_fetch | Specific CVE: CVE-2026-48908
+2026-07-08 06:21:26 | INFO     | nvd_fetch | Successfully fetched page at index 0, got 1 CVEs
+2026-07-08 06:21:33 | DEBUG    | nvd_fetch | Fetching NVD page: startIndex=0, resultsPerPage=200
+2026-07-08 06:21:33 | DEBUG    | nvd_fetch | Specific CVE: CVE-2026-55255
+2026-07-08 06:21:33 | INFO     | nvd_fetch | Successfully fetched page at index 0, got 1 CVEs
+2026-07-08 06:21:40 | DEBUG    | nvd_fetch | Fetching NVD page: startIndex=0, resultsPerPage=200
+2026-07-08 06:21:40 | DEBUG    | nvd_fetch | Specific CVE: CVE-2026-56290
+2026-07-08 06:21:40 | INFO     | nvd_fetch | Successfully fetched page at index 0, got 1 CVEs
+2026-07-08 06:21:47 | DEBUG    | nvd_fetch | Fetching NVD page: startIndex=0, resultsPerPage=200
+2026-07-08 06:21:47 | DEBUG    | nvd_fetch | Specific CVE: CVE-2026-48282
+2026-07-08 06:21:47 | INFO     | nvd_fetch | Successfully fetched page at index 0, got 1 CVEs
