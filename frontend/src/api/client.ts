@@ -5,13 +5,18 @@ const client = axios.create({
     headers: { 'Content-Type': 'application/json' },
 });
 client.interceptors.request.use((config) => {
-    const token = useAuthStore.getState().token;
+    const store = useAuthStore.getState();
+    console.log("AUTH STORE IN AXIOS:", store);
+    const token = store.token;
+    console.log("Auth token:", token);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    console.log("Headers:", config.headers);
+
     return config;
 });
-
 client.interceptors.response.use(
     (res) => res,
     (err) => {

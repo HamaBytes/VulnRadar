@@ -9,15 +9,11 @@ async def auth_middleware(request, handler):
         "/api/v1/auth/register",
         "/api/v1/auth/login",
         "/api/v1/health",
-        '/api/v1/cve/{cve_id}',
-        '/api/v1/cve/list',
-        "/",
+        "/"
     }
 
     if request.path in public_paths or request.path.startswith("/static"):
         return await handler(request)
-
-    # Check Authorization header
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return web.json_response({"error": "Missing authorization header"}, status=401)

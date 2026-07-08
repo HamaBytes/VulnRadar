@@ -26,15 +26,23 @@ export function LoginForm({ onToggle }: LoginFormProps) {    const navigate = us
 
     const onSubmit = async (data: LoginInput) => {
         setServerError(null);
+
         try {
             const response = await login(data);
+
+            console.log("LOGIN RESPONSE:", response);
+            console.log("TOKEN:", response.token);
+            console.log("USER:", response.user);
+
             authLogin(response.token, response.user);
+
+            console.log("STORE AFTER LOGIN:", useAuthStore.getState());
+
             navigate('/dashboard');
         } catch (err: any) {
             setServerError(err.response?.data?.error || 'Login failed. Please try again.');
         }
     };
-
     return (
         <div className="w-full max-w-md bg-surface-container-lowest/60 backdrop-blur-xl border border-outline-variant/30 relative overflow-hidden group">
             <div className="absolute inset-0 border border-primary/10 pointer-events-none"></div>

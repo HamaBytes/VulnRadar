@@ -242,3 +242,15 @@
 2026-07-08 07:40:57 | INFO     | api_app | Registered all API route endpoints
 2026-07-08 07:40:57 | INFO     | api_app | Application created successfully
 2026-07-08 07:40:57 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-08 12:42:02 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-08 12:42:02 | INFO     | api_app | Creating aiohttp web application
+2026-07-08 12:42:02 | INFO     | api_app | Registered all API route endpoints
+2026-07-08 12:42:02 | INFO     | api_app | Application created successfully
+2026-07-08 12:42:02 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-08 13:16:20 | INFO     | api_app | Shutting down APScheduler background jobs
+2026-07-08 13:16:23 | INFO     | api_app | Starting aiohttp server on 127.0.0.1:8000
+2026-07-08 13:16:23 | INFO     | api_app | Creating aiohttp web application
+2026-07-08 13:16:23 | INFO     | api_app | Registered all API route endpoints
+2026-07-08 13:16:23 | INFO     | api_app | Application created successfully
+2026-07-08 13:16:23 | INFO     | api_app | Initializing APScheduler background jobs
+2026-07-08 13:48:10 | INFO     | api_app | Shutting down APScheduler background jobs

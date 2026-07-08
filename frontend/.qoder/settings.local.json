@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/hama/PycharmProjects/VulnRadar/frontend/src/pages -type f -iname \"*cve*\" -o -iname \"*cvelist*\" -o -iname \"*cve-list*\" 2>/dev/null || echo \"No CVE-related page files found\")"
+    ]
+  }
+}
