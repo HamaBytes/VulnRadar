@@ -1,67 +1,45 @@
-"""OSV (Open Source Vulnerabilities) ORM models."""
-
-from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from src.models.db_base import Base
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.models.base import Base
 
 
 class OsvRecord(Base):
-    """Stores OSV enrichment data for a CVE."""
-
     __tablename__ = "osv_records"
 
-    id = Column(BigInteger, primary_key=True)
-    cve_db_id = Column(
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    cve_db_id: Mapped[int] = mapped_column(
         BigInteger,
         ForeignKey("vulnradar.cves.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
-    cve_id = Column(String(50), nullable=False, index=True)
-    osv_id = Column(String(100), nullable=True)  # OSV-specific identifier
-    summary = Column(Text, nullable=True)
-    severities = Column(JSONB, nullable=True)  # List of "type:score" strings
-    created_at = Column(DateTime, default=datetime.utcnow)
+    osv_id: Mapped[str | None] = mapped_column(String(100))
+    summary: Mapped[str | None] = mapped_column(Text)
+    severities: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    # Relationships
-    cve = relationship("Cve", back_populates="osv_records")
-    references = relationship("OsvReference", back_populates="osv_record", cascade="all, delete-orphan")
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "cve_db_id": self.cve_db_id,
-            "cve_id": self.cve_id,
-            "osv_id": self.osv_id,
-            "summary": self.summary,
-            "severities": self.severities or [],
-            "references": [ref.to_dict() for ref in self.references],
-        }
+    cve: Mapped["Cve"] = relationship(back_populates="osv_records")
+    references: Mapped[list["OsvReference"]] = relationship(
+        back_populates="osv_record", cascade="all, delete-orphan", lazy="selectin"
+    )
 
 
 class OsvReference(Base):
-    """Individual reference from an OSV record."""
-
     __tablename__ = "osv_references"
 
-    id = Column(BigInteger, primary_key=True)
-    osv_record_id = Column(
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    osv_record_id: Mapped[int] = mapped_column(
         BigInteger,
         ForeignKey("vulnradar.osv_records.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
-    url = Column(Text, nullable=False)
-    source_id = Column(String(255), nullable=True)
-    title = Column(String(500), nullable=True)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    source_id: Mapped[str | None] = mapped_column(String(255))
+    title: Mapped[str | None] = mapped_column(String(500))
 
-    osv_record = relationship("OsvRecord", back_populates="references")
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "url": self.url,
-            "source_id": self.source_id,
-            "title": self.title,
-        }
+    osv_record: Mapped["OsvRecord"] = relationship(back_populates="references")

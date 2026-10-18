@@ -6,8 +6,8 @@ from typing import Any, Optional, Callable
 import aiohttp
 from sqlalchemy import func
 
-from src.fetchers.kev_fetcher_async import get_kev_cves
-from src.fetchers.nvd_fetcher_async import fetch_vulnerabilities_flat
+from src.fetchers.kev_fetcher import get_kev_cves
+from src.fetchers.nvd_fetcher import fetch_vulnerabilities_flat
 from src.services.enrichment import enrich_all_kevs
 from src.config.database import DatabaseConnector, db_session_ro, init_db
 import src.models.cves  # Ensure all ORM models are registered

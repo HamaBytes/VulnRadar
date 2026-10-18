@@ -7,9 +7,9 @@ import asyncio
 import logging
 from typing import Any, Callable, Optional
 import aiohttp
-from src.fetchers.nvd_fetcher_async import fetch_page
-from src.fetchers.epss_fetcher_async import download_epss_scores, enrich_records_with_epss
-from src.fetchers.exploit_fetcher_async import (
+from src.fetchers.nvd_fetcher import fetch_page
+from src.fetchers.epss_fetcher import download_epss_scores, enrich_records_with_epss
+from src.fetchers.exploit_fetcher import (
     fetch_exploit_intel_for_cves,
     enrich_records_with_exploit_intel,
 )

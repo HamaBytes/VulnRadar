@@ -191,9 +191,9 @@ VulnRadar/
 1. `src/fetchers/pipelines.py` starts by downloading the KEV catalog from CISA.
 2. The pipeline passes vulnerability records into `src/services/enrichment.py`.
 3. Enrichment may include:
-   * EPSS via `src/fetchers/epss_fetcher_async.py`
-   * NVD via `src/fetchers/nvd_fetcher_async.py`
-   * exploit intelligence via `src/fetchers/exploit_fetcher_async.py`
+   * EPSS via `src/fetchers/epss_fetcher.py`
+   * NVD via `src/fetchers/nvd_fetcher.py`
+   * exploit intelligence via `src/fetchers/exploit_fetcher.py`
    * GitHub Advisory via `src/fetchers/github_advisory_fetcher_async.py`
    * OSV via `src/fetchers/osv_fetcher_async.py`
 4. The populated payloads are persisted using `src/services/Database/storage.py`.

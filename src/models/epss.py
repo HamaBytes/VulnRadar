@@ -1,29 +1,25 @@
-from sqlalchemy import BigInteger, Column, DECIMAL, ForeignKey, String
-from sqlalchemy.orm import relationship
+from decimal import Decimal
 
-from src.models.db_base import Base
+from sqlalchemy import BigInteger, DECIMAL, ForeignKey, Index
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.models.base import Base
+from src.models.cve import Cve
 
 
 class Epss(Base):
     __tablename__ = "epss"
 
-    id = Column(BigInteger, primary_key=True)
-    cve_db_id = Column(
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    cve_db_id: Mapped[int] = mapped_column(
         BigInteger,
         ForeignKey("vulnradar.cves.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
-    cve_id = Column(String(50), nullable=False, index=True)
-    epss_score = Column(DECIMAL(10, 5))
-    percentile = Column(DECIMAL(10, 5))
+    epss_score: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 5))
+    percentile: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 5))
 
-    cve = relationship("Cve", back_populates="epss")
+    cve: Mapped["Cve"] = relationship(back_populates="epss")
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "cve_db_id": self.cve_db_id,
-            "cve_id": self.cve_id,
-            "epss_score": float(self.epss_score) if self.epss_score is not None else None,
-            "percentile": float(self.percentile) if self.percentile is not None else None,
-        }
+    __table_args__ = (Index("ix_epss_score_percentile", "epss_score", "percentile"),)

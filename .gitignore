@@ -29,4 +29,7 @@ frontend/dist-ssr/
 frontend/*.local
 
 # Environment files
-.env.*
+.env.*logs/
+.idea/
+*.log
+.env

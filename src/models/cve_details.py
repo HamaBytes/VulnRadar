@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, Column, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 
-from src.models.db_base import Base
+from src.models.base import Base
 
 
 class CveTag(Base):

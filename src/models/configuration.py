@@ -1,38 +1,58 @@
-from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import BigInteger, Boolean, ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from models import *
+from src.models.base import Base
 
-from src.models.db_base import Base
 
-
+# noinspection PyTypeHints
 class CveConfiguration(Base):
     __tablename__ = "cve_configurations"
 
-    id = Column(BigInteger, primary_key=True)
-    cve_db_id = Column(BigInteger, ForeignKey("vulnradar.cves.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    cve_db_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("vulnradar.cves.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
 
-    cve = relationship("Cve", back_populates="configurations")
-    nodes = relationship("CveNode", back_populates="configuration", cascade="all, delete-orphan")
+    cve: Mapped["Cve"] = relationship(back_populates="configurations")
+    nodes: Mapped[list["CveNode"]] = relationship(
+        back_populates="configuration", cascade="all, delete-orphan", lazy="selectin"
+    )
 
 
 class CveNode(Base):
     __tablename__ = "cve_nodes"
 
-    id = Column(BigInteger, primary_key=True)
-    configuration_id = Column(BigInteger, ForeignKey("vulnradar.cve_configurations.id", ondelete="CASCADE"), nullable=False)
-    operator = Column(String(20))
-    negate = Column(Boolean)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    configuration_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("vulnradar.cve_configurations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    operator: Mapped[str | None] = mapped_column(String(20))
+    negate: Mapped[bool | None] = mapped_column(Boolean)
 
-    configuration = relationship("CveConfiguration", back_populates="nodes")
-    cpe_matches = relationship("CpeMatch", back_populates="node", cascade="all, delete-orphan")
+    configuration: Mapped["CveConfiguration"] = relationship(back_populates="nodes")
+    cpe_matches: Mapped[list["CpeMatch"]] = relationship(
+        back_populates="node", cascade="all, delete-orphan", lazy="selectin"
+    )
 
 
 class CpeMatch(Base):
     __tablename__ = "cpe_matches"
 
-    id = Column(BigInteger, primary_key=True)
-    node_id = Column(BigInteger, ForeignKey("vulnradar.cve_nodes.id", ondelete="CASCADE"), nullable=False)
-    vulnerable = Column(Boolean)
-    criteria = Column(Text)
-    match_criteria_id = Column(String(100))
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    node_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("vulnradar.cve_nodes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    vulnerable: Mapped[bool | None] = mapped_column(Boolean)
+    criteria: Mapped[str | None] = mapped_column(Text)
+    match_criteria_id: Mapped[str | None] = mapped_column(String(100))
 
-    node = relationship("CveNode", back_populates="cpe_matches")
+    node: Mapped["CveNode"] = relationship(back_populates="cpe_matches")

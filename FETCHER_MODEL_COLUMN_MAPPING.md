@@ -3,13 +3,13 @@
 This report maps the fetcher/enrichment output keys to the SQLAlchemy ORM model tables and columns that are actually persisted by `src/services/Database/storage.py`.
 
 ## Sources covered
-- `src/fetchers/epss_fetcher_async.py`
-- `src/fetchers/exploit_fetcher_async.py`
+- `src/fetchers/epss_fetcher.py`
+- `src/fetchers/exploit_fetcher.py`
 - `src/fetchers/osv_fetcher_async.py`
 - `src/fetchers/github_advisory_fetcher_async.py`
 - `src/fetchers/vendor_advisory_fetcher_async.py`
-- `src/fetchers/nvd_fetcher_async.py`
-- `src/fetchers/kev_fetcher_async.py`
+- `src/fetchers/nvd_fetcher.py`
+- `src/fetchers/kev_fetcher.py`
 - `src/services/enrichment.py`
 - `src/services/Database/storage.py`
 

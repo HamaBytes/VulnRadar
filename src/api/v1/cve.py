@@ -1,7 +1,6 @@
 from aiohttp import web
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-
 from src.api.middleware.auth import require_auth
 from src.config.database import db_session_ro
 from src.models.cve import Cve
@@ -16,7 +15,6 @@ from src.models.exploit import ExploitReference
 from src.models.osv import OsvRecord, OsvReference
 from src.models.github_advisory import GithubAdvisory, GithubAdvisoryReference
 from src.models.vendor_advisory import VendorAdvisory
-
 routes = web.RouteTableDef()
 
 
@@ -94,6 +92,4 @@ async def get_cve(request):
         "cve": data,
         "count": 1,
     })
-
-
 cve_routes = routes

@@ -5,10 +5,10 @@
 # share names like CpeMatch, CveWeakness, CveReference, CveDescription.
 # We import the NVD parsing versions with explicit aliases to prevent shadowing.
 
-from .nvd_fetcher_async import fetch_page
-from .epss_fetcher_async import download_epss_scores, enrich_records_with_epss
-from .kev_fetcher_async import get_kev_cves
-from .exploit_fetcher_async import fetch_exploit_intel_for_cves, enrich_records_with_exploit_intel
+from .nvd_fetcher import fetch_page
+from .epss_fetcher import download_epss_scores, enrich_records_with_epss
+from .kev_fetcher import get_kev_cves
+from .exploit_fetcher import fetch_exploit_intel_for_cves, enrich_records_with_exploit_intel
 from .osv_fetcher_async import fetch_osv_for_cves, enrich_records_with_osv
 from .github_advisory_fetcher_async import fetch_github_advisory_for_cves, enrich_records_with_github_advisory
 from .vendor_advisory_fetcher_async import fetch_vendor_advisory_for_cves, enrich_records_with_vendor_advisory
